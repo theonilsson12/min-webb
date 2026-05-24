@@ -837,26 +837,26 @@
     const empty = document.getElementById('invEmpty');
     document.getElementById('invCount').textContent = inventory.length;
 
+    // Remove only item cards, never touch #invEmpty
+    grid.querySelectorAll('.inv-item').forEach(el => el.remove());
+
     if (inventory.length === 0) {
       empty.style.display = 'block';
-      grid.innerHTML = '';
-      grid.appendChild(empty);
       return;
     }
 
     empty.style.display = 'none';
-    grid.innerHTML = '';
+
+    const RARITY_COLOR = {
+      consumer: 'var(--gray)', industrial: 'var(--teal)', 'mil-spec': 'var(--blue)',
+      restricted: 'var(--purple)', classified: 'var(--pink)', covert: 'var(--red)',
+      extraordinary: 'var(--gold)'
+    };
 
     inventory.forEach(item => {
-      const rarityColor = {
-        consumer: 'var(--gray)', industrial: 'var(--teal)', 'mil-spec': 'var(--blue)',
-        restricted: 'var(--purple)', classified: 'var(--pink)', covert: 'var(--red)',
-        extraordinary: 'var(--gold)'
-      }[item.rarity] || '#fff';
-
       const el = document.createElement('div');
       el.className = `inv-item ${item.cls}`;
-      el.style.borderColor = rarityColor;
+      el.style.borderColor = RARITY_COLOR[item.rarity] || '#fff';
       el.innerHTML = `
         <div class="inv-emoji">${item.emoji}</div>
         <div class="inv-name">${item.name}</div>
