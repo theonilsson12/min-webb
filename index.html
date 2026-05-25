@@ -29,7 +29,7 @@ html, body {
   font-family: 'Barlow Condensed', sans-serif;
 }
 
-/* ── Landing: just the button ── */
+/* ── Landing ── */
 #landing {
   position: fixed;
   inset: 0;
@@ -40,18 +40,12 @@ html, body {
   z-index: 1;
   transition: opacity 0.4s, pointer-events 0s 0.4s;
 }
+#landing.hidden { opacity: 0; pointer-events: none; }
 
-#landing.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Subtle radial glow behind button */
 #landing::before {
   content: '';
   position: absolute;
-  width: 600px;
-  height: 600px;
+  width: 600px; height: 600px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(228,188,90,0.06) 0%, transparent 70%);
   pointer-events: none;
@@ -59,84 +53,55 @@ html, body {
 
 .big-btn {
   position: relative;
-  width: 220px;
-  height: 220px;
+  width: 220px; height: 220px;
   border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  background: none;
-  outline: none;
+  border: none; cursor: pointer;
+  background: none; outline: none;
   -webkit-tap-highlight-color: transparent;
 }
-
-/* Outer ring */
 .big-btn::before {
   content: '';
-  position: absolute;
-  inset: -3px;
+  position: absolute; inset: -3px;
   border-radius: 50%;
   background: conic-gradient(var(--gold), #c9a44e, var(--gold), #8a6b28, var(--gold));
   opacity: 0.7;
   animation: spin-ring 8s linear infinite;
 }
-
-/* Inner fill */
 .big-btn::after {
   content: '';
-  position: absolute;
-  inset: 2px;
+  position: absolute; inset: 2px;
   border-radius: 50%;
   background: radial-gradient(circle at 38% 35%, #2a2310, #0d0f14);
   border: 1px solid rgba(228,188,90,0.15);
 }
-
-@keyframes spin-ring {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin-ring { to { transform: rotate(360deg); } }
 
 .btn-inner {
-  position: absolute;
-  inset: 2px;
-  border-radius: 50%;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: transform 0.15s;
+  position: absolute; inset: 2px;
+  border-radius: 50%; z-index: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 6px; transition: transform 0.15s;
 }
-
 .big-btn:hover .btn-inner { transform: scale(1.04); }
 .big-btn:active .btn-inner { transform: scale(0.96); }
 
-.btn-icon {
-  font-size: 52px;
-  line-height: 1;
-  filter: drop-shadow(0 0 12px rgba(228,188,90,0.5));
-}
-
+.btn-icon { font-size: 52px; line-height: 1; filter: drop-shadow(0 0 12px rgba(228,188,90,0.5)); }
 .btn-label {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 5px;
-  text-transform: uppercase;
-  color: var(--gold);
-  opacity: 0.9;
+  font-size: 15px; font-weight: 700;
+  letter-spacing: 5px; text-transform: uppercase;
+  color: var(--gold); opacity: 0.9;
 }
 
-/* Pulse rings */
 .pulse-ring {
-  position: absolute;
-  inset: -30px;
+  position: absolute; inset: -30px;
   border-radius: 50%;
   border: 1px solid rgba(228,188,90,0.15);
   animation: pulse 3s ease-out infinite;
 }
 .pulse-ring:nth-child(2) { inset: -60px; animation-delay: 1s; }
 .pulse-ring:nth-child(3) { inset: -90px; animation-delay: 2s; }
-
 @keyframes pulse {
   0% { opacity: 0.6; transform: scale(0.95); }
   100% { opacity: 0; transform: scale(1.05); }
@@ -144,122 +109,79 @@ html, body {
 
 /* ── Overlay ── */
 #overlay {
-  position: fixed;
-  inset: 0;
+  position: fixed; inset: 0;
   background: rgba(0,0,0,0.96);
   z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
   gap: 32px;
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0; pointer-events: none;
   transition: opacity 0.35s;
 }
-
-#overlay.show {
-  opacity: 1;
-  pointer-events: all;
-}
+#overlay.show { opacity: 1; pointer-events: all; }
 
 .close-btn {
-  position: absolute;
-  top: 24px;
-  right: 28px;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  position: absolute; top: 24px; right: 28px;
+  background: none; border: 1px solid var(--border); border-radius: 4px;
   color: #5a6478;
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 13px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  padding: 8px 16px;
-  cursor: pointer;
+  font-size: 13px; letter-spacing: 3px; text-transform: uppercase;
+  padding: 8px 16px; cursor: pointer;
   transition: color 0.2s, border-color 0.2s;
 }
 .close-btn:hover { color: #fff; border-color: #fff; }
 
 /* ── Spinner ── */
-.spinner-wrapper {
-  width: min(860px, 92vw);
-  position: relative;
-}
+.spinner-wrapper { width: min(860px, 92vw); position: relative; }
 
 .spinner-track {
   overflow: hidden;
-  border: 1.5px solid var(--border);
-  border-radius: 6px;
+  border: 1.5px solid var(--border); border-radius: 6px;
   background: var(--surface);
-  position: relative;
-  height: 148px;
+  position: relative; height: 148px;
 }
-
-.spinner-track::before,
-.spinner-track::after {
+.spinner-track::before, .spinner-track::after {
   content: '';
-  position: absolute;
-  top: 0; bottom: 0;
-  width: 140px;
-  z-index: 10;
-  pointer-events: none;
+  position: absolute; top: 0; bottom: 0;
+  width: 140px; z-index: 10; pointer-events: none;
 }
 .spinner-track::before { left: 0; background: linear-gradient(to right, var(--surface), transparent); }
-.spinner-track::after  { right: 0; background: linear-gradient(to left,  var(--surface), transparent); }
+.spinner-track::after  { right: 0; background: linear-gradient(to left, var(--surface), transparent); }
 
 .spinner-needle {
-  position: absolute;
-  top: 0; bottom: 0;
-  left: 50%;
+  position: absolute; top: 0; bottom: 0; left: 50%;
   transform: translateX(-50%);
-  width: 2px;
-  background: var(--gold);
-  z-index: 20;
-  pointer-events: none;
+  width: 2px; background: var(--gold);
+  z-index: 20; pointer-events: none;
 }
 .spinner-needle::before, .spinner-needle::after {
-  content: '';
-  position: absolute;
-  left: 50%;
+  content: ''; position: absolute; left: 50%;
   transform: translateX(-50%);
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
+  border-left: 7px solid transparent; border-right: 7px solid transparent;
 }
-.spinner-needle::before { top: 0;    border-top:    10px solid var(--gold); }
+.spinner-needle::before { top: 0; border-top: 10px solid var(--gold); }
 .spinner-needle::after  { bottom: 0; border-bottom: 10px solid var(--gold); }
 
 .spinner-strip {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  gap: 4px;
-  padding: 0 4px;
+  display: flex; align-items: center;
+  height: 100%; gap: 4px; padding: 0 4px;
   will-change: transform;
 }
 
 .item-card {
-  flex-shrink: 0;
-  width: 120px;
-  height: 120px;
+  flex-shrink: 0; width: 120px; height: 120px;
   border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end;
   padding: 10px 8px 8px;
-  position: relative;
-  overflow: hidden;
+  position: relative; overflow: hidden;
   border: 2px solid transparent;
   background: var(--surface2);
 }
-
 .item-card .item-icon {
-  position: absolute;
-  top: 50%; left: 50%;
+  position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -62%);
-  font-size: 38px;
-  opacity: 0.9;
+  font-size: 38px; opacity: 0.9;
 }
 .item-card .item-name {
   font-size: 10px; font-weight: 500; letter-spacing: 1px;
@@ -284,85 +206,73 @@ html, body {
 .r-covert     { border-color: var(--red);    } .r-covert     .item-rarity { color: var(--red);    }
 .r-gold       { border-color: var(--gold);   } .r-gold       .item-rarity { color: var(--gold);   }
 
-/* ── Open button inside overlay ── */
-.spin-btn {
-  padding: 15px 56px;
-  background: linear-gradient(135deg, #c9a44e, #e4bc5a, #c9a44e);
-  border: none;
-  border-radius: 4px;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: #1a1200;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.1s, box-shadow 0.2s;
-  box-shadow: 0 4px 24px rgba(228,188,90,0.25);
-}
-.spin-btn::before {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 60%; height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.35), transparent);
-  transform: skewX(-20deg);
-  transition: left 0.5s;
-}
-.spin-btn:hover::before { left: 160%; }
-.spin-btn:hover { box-shadow: 0 6px 32px rgba(228,188,90,0.45); transform: translateY(-1px); }
-.spin-btn:active { transform: scale(0.97); }
-.spin-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
-
-/* Rarity legend */
-.legend {
-  display: flex; gap: 18px; flex-wrap: wrap; justify-content: center;
-}
-.legend-item {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #4a5568;
-}
-.legend-dot {
-  width: 8px; height: 8px; border-radius: 2px;
-}
-
-/* Inventory button on landing */
-#inv-panel {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  background: var(--bg);
+/* ── Drop Chances Table ── */
+.chances-table {
   display: flex;
-  flex-direction: column;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: min(860px, 92vw);
+}
+
+.chance-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 12px;
+}
+
+.chance-dot {
+  width: 7px; height: 7px;
+  border-radius: 2px; flex-shrink: 0;
+}
+
+.chance-name {
+  font-size: 11px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: #6b7a94;
+  font-weight: 500;
+}
+
+.chance-pct {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px; font-weight: 700;
+  letter-spacing: 1px;
+  margin-left: 4px;
+}
+
+/* ── Inventory Panel ── */
+#inv-panel {
+  position: fixed; inset: 0; z-index: 40;
+  background: var(--bg);
+  display: flex; flex-direction: column;
   align-items: center;
   padding: 48px 24px 40px;
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0; pointer-events: none;
   transition: opacity 0.3s;
   overflow-y: auto;
 }
 #inv-panel.show { opacity: 1; pointer-events: all; }
 
 .inv-header {
-  display: flex;
-  align-items: center;
+  display: flex; align-items: center;
   justify-content: space-between;
   width: min(800px, 100%);
-  margin-bottom: 28px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .inv-title {
   font-family: 'Rajdhani', sans-serif;
   font-size: 28px; font-weight: 700;
-  letter-spacing: 5px; text-transform: uppercase;
-  color: #fff;
+  letter-spacing: 5px; text-transform: uppercase; color: #fff;
 }
-
 .inv-count {
-  font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
-  color: #4a5568; margin-top: 2px;
+  font-size: 13px; letter-spacing: 2px;
+  text-transform: uppercase; color: #4a5568; margin-top: 2px;
 }
 
 .btn-back {
@@ -376,9 +286,59 @@ html, body {
 }
 .btn-back:hover { color: #fff; border-color: #fff; }
 
+/* ── Search Bar ── */
+.inv-search-wrap {
+  width: min(800px, 100%);
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.inv-search {
+  width: 100%;
+  padding: 11px 16px 11px 40px;
+  background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.inv-search::placeholder { color: #3a4560; }
+.inv-search:focus { border-color: rgba(228,188,90,0.4); }
+
+.search-icon {
+  position: absolute; left: 13px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px; opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ── Rarity filter pills ── */
+.rarity-filters {
+  width: min(800px, 100%);
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.filter-pill {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: #4a5568;
+  cursor: pointer; transition: all 0.2s;
+}
+.filter-pill:hover { color: #fff; border-color: #fff; }
+.filter-pill.active {
+  color: #0d0f14;
+  border-color: transparent;
+}
+
 .inv-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: flex; flex-wrap: wrap;
   gap: 10px;
   width: min(800px, 100%);
   justify-content: flex-start;
@@ -386,49 +346,50 @@ html, body {
 
 .inv-item {
   width: 110px; height: 110px;
-  border-radius: 6px;
-  background: var(--surface2);
+  border-radius: 6px; background: var(--surface2);
   display: flex; flex-direction: column;
   align-items: center; justify-content: flex-end;
   padding: 8px 6px 8px;
   border: 1.5px solid;
   position: relative; overflow: hidden;
+  cursor: default;
+  transition: transform 0.15s;
 }
+.inv-item:hover { transform: scale(1.04); }
+
 .inv-item .inv-emoji {
   position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -65%); font-size: 34px;
 }
 .inv-item .inv-name {
-  font-size: 9px; letter-spacing: 0.8px; text-transform: uppercase;
-  text-align: center; font-weight: 500; color: #fff;
+  font-size: 9px; letter-spacing: 0.8px;
+  text-transform: uppercase; text-align: center;
+  font-weight: 500; color: #fff;
   line-height: 1.2; position: relative; z-index: 1;
 }
 
-.inv-empty {
+.inv-no-results {
   color: #2a3040; font-size: 14px; letter-spacing: 3px;
-  text-transform: uppercase; margin-top: 60px;
+  text-transform: uppercase; margin-top: 60px; width: 100%;
+  text-align: center;
 }
 
-/* Inventory button on landing */
 .inv-btn-landing {
-  position: fixed;
-  bottom: 32px;
-  right: 32px;
+  position: fixed; bottom: 32px; right: 32px;
   padding: 10px 20px;
   background: transparent;
   border: 1px solid var(--border); border-radius: 4px;
   font-family: 'Rajdhani', sans-serif;
   font-size: 13px; font-weight: 700; letter-spacing: 2px;
   text-transform: uppercase; color: #4a5568;
-  cursor: pointer; transition: color 0.2s, border-color 0.2s;
-  z-index: 2;
+  cursor: pointer; transition: color 0.2s, border-color 0.2s; z-index: 2;
 }
 .inv-btn-landing:hover { color: #fff; border-color: #fff; }
 </style>
 </head>
 <body>
 
-<!-- Landing: just the button -->
+<!-- Landing -->
 <div id="landing">
   <div class="pulse-ring"></div>
   <div class="pulse-ring"></div>
@@ -451,8 +412,25 @@ html, body {
     </div>
     <button class="btn-back" onclick="hideInventory()">← Back</button>
   </div>
+
+  <!-- Search -->
+  <div class="inv-search-wrap">
+    <span class="search-icon">🔍</span>
+    <input
+      class="inv-search"
+      id="invSearch"
+      type="text"
+      placeholder="Search items..."
+      oninput="renderInventory()"
+      autocomplete="off"
+    />
+  </div>
+
+  <!-- Rarity filter pills -->
+  <div class="rarity-filters" id="rarityFilters"></div>
+
   <div class="inv-grid" id="invGrid">
-    <div class="inv-empty" id="invEmpty">Nothing here yet</div>
+    <div class="inv-no-results" id="invEmpty">Nothing here yet</div>
   </div>
 </div>
 
@@ -465,18 +443,9 @@ html, body {
     </div>
   </div>
 
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:var(--gray)"></div>Consumer</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div>Industrial</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Mil-Spec</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Restricted</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--pink)"></div>Classified</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Covert</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>Extraordinary</div>
-  </div>
+  <!-- Drop chances instead of rarity names -->
+  <div class="chances-table" id="chancesTable"></div>
 </div>
-
-
 
 <script>
 const ITEMS = [
@@ -501,7 +470,98 @@ const RARITY_COLOR = {
   extraordinary: 'var(--gold)'
 };
 
-// Load inventory from localStorage
+const RARITY_HEX = {
+  consumer: '#b0c3d9', industrial: '#5e98d9', 'mil-spec': '#4b69ff',
+  restricted: '#8847ff', classified: '#d32ce6', covert: '#eb4b4b',
+  extraordinary: '#e4bc5a'
+};
+
+// Compute total probability weight
+const TOTAL_PROB = ITEMS.reduce((s, i) => s + i.prob, 0);
+
+// Build drop chances per rarity (sum probs per rarity / total * 100)
+const RARITY_ORDER = ['consumer','industrial','mil-spec','restricted','classified','covert','extraordinary'];
+const RARITY_LABEL = {
+  consumer: 'Consumer', industrial: 'Industrial', 'mil-spec': 'Mil-Spec',
+  restricted: 'Restricted', classified: 'Classified', covert: 'Covert',
+  extraordinary: 'Extraordinary'
+};
+
+function getRarityChance(rarity) {
+  const sum = ITEMS.filter(i => i.rarity === rarity).reduce((s, i) => s + i.prob, 0);
+  return (sum / TOTAL_PROB * 100);
+}
+
+function formatChance(pct) {
+  if (pct >= 1) return pct.toFixed(1) + '%';
+  if (pct >= 0.1) return pct.toFixed(2) + '%';
+  return pct.toFixed(3) + '%';
+}
+
+// Build chances table
+function buildChancesTable() {
+  const table = document.getElementById('chancesTable');
+  table.innerHTML = '';
+  RARITY_ORDER.forEach(rarity => {
+    const pct = getRarityChance(rarity);
+    const hex = RARITY_HEX[rarity];
+    const row = document.createElement('div');
+    row.className = 'chance-row';
+    row.innerHTML = `
+      <div class="chance-dot" style="background:${hex}"></div>
+      <span class="chance-name">${RARITY_LABEL[rarity]}</span>
+      <span class="chance-pct" style="color:${hex}">${formatChance(pct)}</span>
+    `;
+    table.appendChild(row);
+  });
+}
+
+// Build rarity filter pills
+function buildRarityFilters() {
+  const container = document.getElementById('rarityFilters');
+  container.innerHTML = '';
+
+  // "All" pill
+  const all = document.createElement('button');
+  all.className = 'filter-pill active';
+  all.dataset.rarity = 'all';
+  all.style.backgroundColor = 'rgba(228,188,90,0.85)';
+  all.textContent = 'All';
+  all.onclick = () => setRarityFilter('all');
+  container.appendChild(all);
+
+  // One pill per rarity present in inventory
+  const presentRarities = [...new Set(inventory.map(i => i.rarity))];
+  RARITY_ORDER.filter(r => presentRarities.includes(r)).forEach(rarity => {
+    const pill = document.createElement('button');
+    pill.className = 'filter-pill';
+    pill.dataset.rarity = rarity;
+    pill.textContent = RARITY_LABEL[rarity];
+    pill.onclick = () => setRarityFilter(rarity);
+    container.appendChild(pill);
+  });
+}
+
+let activeRarityFilter = 'all';
+
+function setRarityFilter(rarity) {
+  activeRarityFilter = rarity;
+  document.querySelectorAll('.filter-pill').forEach(pill => {
+    const isActive = pill.dataset.rarity === rarity;
+    pill.classList.toggle('active', isActive);
+    if (isActive) {
+      const hex = rarity === 'all' ? 'rgba(228,188,90,0.85)' : RARITY_HEX[rarity] + 'cc';
+      pill.style.backgroundColor = hex;
+      pill.style.color = rarity === 'all' ? '#1a1200' : '#fff';
+    } else {
+      pill.style.backgroundColor = '';
+      pill.style.color = '';
+    }
+  });
+  renderInventory();
+}
+
+// Inventory
 let inventory = [];
 try { inventory = JSON.parse(localStorage.getItem('dropzone_inventory') || '[]'); } catch(e) {}
 
@@ -513,8 +573,7 @@ let spinning = false;
 let animFrame = null;
 
 function weightedRandom() {
-  const total = ITEMS.reduce((s, i) => s + i.prob, 0);
-  let r = Math.random() * total;
+  let r = Math.random() * TOTAL_PROB;
   for (const item of ITEMS) { r -= item.prob; if (r <= 0) return item; }
   return ITEMS[0];
 }
@@ -522,7 +581,7 @@ function weightedRandom() {
 function makeCard(item) {
   const d = document.createElement('div');
   d.className = `item-card ${item.cls}`;
-  d.innerHTML = `<div class="shine"></div><div class="item-icon">${item.emoji}</div><div class="item-name">${item.name}</div><div class="item-rarity">${item.rarity}</div>`;
+  d.innerHTML = `<div class="shine"></div><div class="item-icon">${item.emoji}</div><div class="item-name">${item.name}</div><div class="item-rarity">${formatChance(getRarityChance(item.rarity))}</div>`;
   return d;
 }
 
@@ -552,7 +611,6 @@ function triggerOpen() {
 
   const duration = 6200;
   const start = performance.now();
-
   function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
 
   function animate(now) {
@@ -561,15 +619,12 @@ function triggerOpen() {
     if (t < 1) {
       animFrame = requestAnimationFrame(animate);
     } else {
-      spinning = false;
-      animFrame = null;
-      // Save item and close silently
+      spinning = false; animFrame = null;
       inventory.unshift({ ...wonItem, id: Date.now() });
       saveInventory();
       setTimeout(closeOverlay, 600);
     }
   }
-
   animFrame = requestAnimationFrame(animate);
 }
 
@@ -585,6 +640,9 @@ function closeOverlay() {
 }
 
 function showInventory() {
+  activeRarityFilter = 'all';
+  document.getElementById('invSearch').value = '';
+  buildRarityFilters();
   renderInventory();
   document.getElementById('landing').classList.add('hidden');
   document.getElementById('inv-panel').classList.add('show');
@@ -596,22 +654,49 @@ function hideInventory() {
 }
 
 function renderInventory() {
+  const query = document.getElementById('invSearch').value.trim().toLowerCase();
   const grid = document.getElementById('invGrid');
   const empty = document.getElementById('invEmpty');
+
   document.getElementById('invCount').textContent = `${inventory.length} item${inventory.length !== 1 ? 's' : ''}`;
+
+  // Rebuild pills in case new rarities appeared
+  buildRarityFilters();
+
+  // Filter
+  let filtered = inventory.filter(item => {
+    const matchSearch = !query || item.name.toLowerCase().includes(query) || item.rarity.toLowerCase().includes(query);
+    const matchRarity = activeRarityFilter === 'all' || item.rarity === activeRarityFilter;
+    return matchSearch && matchRarity;
+  });
+
   grid.querySelectorAll('.inv-item').forEach(el => el.remove());
 
-  if (inventory.length === 0) { empty.style.display = 'block'; return; }
+  if (inventory.length === 0) {
+    empty.textContent = 'Nothing here yet';
+    empty.style.display = 'block';
+    return;
+  }
+
+  if (filtered.length === 0) {
+    empty.textContent = 'No items match your search';
+    empty.style.display = 'block';
+    return;
+  }
+
   empty.style.display = 'none';
 
-  inventory.forEach(item => {
+  filtered.forEach(item => {
     const el = document.createElement('div');
     el.className = 'inv-item';
-    el.style.borderColor = RARITY_COLOR[item.rarity] || '#fff';
+    el.style.borderColor = RARITY_HEX[item.rarity] || '#fff';
     el.innerHTML = `<div class="inv-emoji">${item.emoji}</div><div class="inv-name">${item.name}</div>`;
     grid.appendChild(el);
   });
 }
+
+// Init
+buildChancesTable();
 </script>
 </body>
 </html>
