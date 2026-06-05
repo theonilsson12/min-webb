@@ -4,663 +4,945 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🍋 Lemon Empire</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0d0d0d;
-    --surface: #141414;
-    --surface2: #1c1c1c;
-    --surface3: #242424;
-    --border: #2a2a2a;
-    --lemon: #f5d000;
-    --lemon-dim: #b89d00;
-    --lemon-glow: rgba(245, 208, 0, 0.18);
-    --lemon-glow-soft: rgba(245, 208, 0, 0.07);
-    --acid: #c8ff00;
-    --text: #e8e8e8;
-    --text-dim: #666;
-    --text-muted: #3a3a3a;
-    --danger: #ff4444;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    min-height: 100vh;
-    overflow-x: hidden;
-    cursor: default;
-  }
-
-  /* Subtle noise texture overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 999;
-    opacity: 0.6;
-  }
-
-  /* === LAYOUT === */
-  .app {
-    display: grid;
-    grid-template-columns: 280px 1fr 260px;
-    grid-template-rows: auto 1fr;
-    min-height: 100vh;
-    max-width: 1200px;
-    margin: 0 auto;
-    gap: 0;
-  }
-
-  /* === HEADER === */
-  header {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 28px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    letter-spacing: 0.1em;
-    color: var(--lemon);
-    text-shadow: 0 0 30px var(--lemon-glow);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .logo span { font-size: 1.6rem; }
-
-  .header-stats {
-    display: flex;
-    gap: 32px;
-    align-items: center;
-  }
-
-  .stat-pill {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 1px;
-  }
-
-  .stat-pill .label {
-    font-size: 0.6rem;
-    color: var(--text-dim);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
-
-  .stat-pill .value {
-    font-size: 0.95rem;
-    color: var(--lemon);
-    font-weight: 500;
-  }
-
-  /* === SIDEBAR LEFT (upgrades) === */
-  .sidebar-left {
-    border-right: 1px solid var(--border);
-    padding: 20px 16px;
-    overflow-y: auto;
-    background: var(--surface);
-    max-height: calc(100vh - 65px);
-    position: sticky;
-    top: 65px;
-  }
-
-  .section-title {
-    font-size: 0.65rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 14px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  /* === CENTER === */
-  .center {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 20px;
-    gap: 28px;
-    position: relative;
-  }
-
-  /* Lemon counter display */
-  .lemon-count-display {
-    text-align: center;
-  }
-
-  .lemon-count-display .big-number {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 4.5rem;
-    color: var(--lemon);
-    line-height: 1;
-    text-shadow: 0 0 60px rgba(245,208,0,0.3);
-    letter-spacing: 0.04em;
-  }
-
-  .lemon-count-display .sub {
-    font-size: 0.7rem;
-    color: var(--text-dim);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
-
-  /* Main clicker lemon */
-  .clicker-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .glow-ring {
-    position: absolute;
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(245,208,0,0.1) 0%, transparent 70%);
-    animation: pulse-ring 2.5s ease-in-out infinite;
-    pointer-events: none;
-  }
-
-  @keyframes pulse-ring {
-    0%, 100% { transform: scale(1); opacity: 0.6; }
-    50% { transform: scale(1.12); opacity: 1; }
-  }
-
-  .main-lemon {
-    font-size: 7rem;
-    cursor: pointer;
-    user-select: none;
-    transition: transform 0.08s ease, filter 0.08s ease;
-    filter: drop-shadow(0 0 20px rgba(245,208,0,0.4));
-    position: relative;
-    z-index: 2;
-    animation: float 3s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-8px); }
-  }
-
-  .main-lemon:active {
-    transform: scale(0.88) translateY(2px) !important;
-    filter: drop-shadow(0 0 40px rgba(245,208,0,0.8));
-    animation-play-state: paused;
-  }
-
-  .main-lemon:hover {
-    filter: drop-shadow(0 0 30px rgba(245,208,0,0.6));
-  }
-
-  /* Click particles */
-  .particle {
-    position: fixed;
-    pointer-events: none;
-    font-size: 1.2rem;
-    font-weight: 500;
-    color: var(--lemon);
-    text-shadow: 0 0 8px var(--lemon);
-    font-family: 'DM Mono', monospace;
-    z-index: 500;
-    animation: fly-up 0.9s ease-out forwards;
-  }
-
-  @keyframes fly-up {
-    0%   { opacity: 1; transform: translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateY(-80px) scale(0.6); }
-  }
-
-  /* Rate info */
-  .rate-bar {
-    display: flex;
-    gap: 24px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 24px;
-  }
-
-  .rate-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .rate-item .r-label {
-    font-size: 0.58rem;
-    color: var(--text-dim);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
-
-  .rate-item .r-val {
-    font-size: 0.88rem;
-    color: var(--acid);
-  }
-
-  /* === GENERATORS (right sidebar) === */
-  .sidebar-right {
-    border-left: 1px solid var(--border);
-    padding: 20px 16px;
-    overflow-y: auto;
-    background: var(--surface);
-    max-height: calc(100vh - 65px);
-    position: sticky;
-    top: 65px;
-  }
-
-  /* === UPGRADE CARDS === */
-  .upgrade-card {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .upgrade-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, var(--lemon-glow-soft), transparent);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .upgrade-card:hover::before { opacity: 1; }
-
-  .upgrade-card:hover {
-    border-color: var(--lemon-dim);
-    transform: translateX(2px);
-  }
-
-  .upgrade-card.affordable {
-    border-color: rgba(245,208,0,0.3);
-  }
-
-  .upgrade-card.affordable:hover {
-    border-color: var(--lemon);
-    box-shadow: 0 0 12px var(--lemon-glow);
-  }
-
-  .upgrade-card.maxed {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  .upgrade-card.maxed:hover { transform: none; }
-
-  .upgrade-icon { font-size: 1.5rem; flex-shrink: 0; }
-
-  .upgrade-info { flex: 1; min-width: 0; }
-
-  .upgrade-name {
-    font-size: 0.78rem;
-    color: var(--text);
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .upgrade-desc {
-    font-size: 0.62rem;
-    color: var(--text-dim);
-    margin-top: 1px;
-  }
-
-  .upgrade-cost {
-    font-size: 0.75rem;
-    color: var(--lemon);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-
-  .upgrade-cost.cant-afford { color: var(--text-dim); }
-
-  /* === GENERATOR CARDS === */
-  .gen-card {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 12px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .gen-card::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 2px;
-    background: var(--lemon);
-    width: var(--progress, 0%);
-    transition: width 0.3s ease;
-  }
-
-  .gen-card:hover {
-    border-color: var(--lemon-dim);
-  }
-
-  .gen-card.affordable {
-    border-color: rgba(245,208,0,0.3);
-  }
-
-  .gen-card.affordable:hover {
-    border-color: var(--lemon);
-    box-shadow: 0 0 16px var(--lemon-glow);
-  }
-
-  .gen-emoji { font-size: 1.8rem; }
-
-  .gen-info .gen-name {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--text);
-  }
-
-  .gen-info .gen-rate {
-    font-size: 0.62rem;
-    color: var(--text-dim);
-    margin-top: 1px;
-  }
-
-  .gen-right { text-align: right; }
-
-  .gen-count {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.6rem;
-    color: var(--lemon);
-    line-height: 1;
-  }
-
-  .gen-cost {
-    font-size: 0.65rem;
-    color: var(--text-dim);
-    margin-top: 2px;
-  }
-
-  .gen-cost.affordable-cost { color: var(--lemon-dim); }
-
-  /* === MILESTONES / ACHIEVEMENTS === */
-  .achievements-strip {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 420px;
-  }
-
-  .achievement {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-size: 0.65rem;
-    color: var(--text-dim);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    transition: all 0.3s ease;
-  }
-
-  .achievement.unlocked {
-    border-color: var(--lemon-dim);
-    color: var(--lemon);
-    background: rgba(245,208,0,0.05);
-  }
-
-  /* === TOAST NOTIFICATIONS === */
-  #toasts {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .toast {
-    background: var(--surface3);
-    border: 1px solid var(--lemon-dim);
-    color: var(--lemon);
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 0.78rem;
-    animation: toast-in 0.3s ease, toast-out 0.3s ease 2.2s forwards;
-    box-shadow: 0 0 20px var(--lemon-glow);
-    white-space: nowrap;
-  }
-
-  @keyframes toast-in {
-    from { opacity: 0; transform: translateY(12px) scale(0.95); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-
-  @keyframes toast-out {
-    from { opacity: 1; }
-    to   { opacity: 0; transform: translateY(-6px); }
-  }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  /* === PRESTIGE === */
-  .prestige-btn {
-    background: transparent;
-    border: 1px solid #333;
-    color: var(--text-dim);
-    border-radius: 8px;
-    padding: 8px 18px;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    cursor: pointer;
-    letter-spacing: 0.1em;
-    transition: all 0.2s ease;
-    text-transform: uppercase;
-  }
-
-  .prestige-btn:hover {
-    border-color: var(--danger);
-    color: var(--danger);
-  }
-
-  .prestige-btn.ready {
-    border-color: var(--danger);
-    color: var(--danger);
-    animation: danger-pulse 1.5s ease-in-out infinite;
-  }
-
-  @keyframes danger-pulse {
-    0%, 100% { box-shadow: none; }
-    50% { box-shadow: 0 0 16px rgba(255,68,68,0.3); }
-  }
+:root {
+  --bg: #0b0b0b;
+  --surface: #111111;
+  --surface2: #181818;
+  --surface3: #202020;
+  --border: #272727;
+  --border2: #333;
+  --lemon: #f5d000;
+  --lemon-dim: #b89d00;
+  --lemon-pale: rgba(245,208,0,0.12);
+  --lemon-glow: rgba(245,208,0,0.2);
+  --acid: #c8ff00;
+  --text: #e0e0e0;
+  --text-dim: #5a5a5a;
+  --text-mid: #888;
+  --danger: #ff4455;
+  --ok: #44ff88;
+  --radius: 9px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Mono',monospace;
+  display:flex;
+  flex-direction:column;
+}
+
+/* noise */
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:.7;
+}
+
+/* HEADER */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.7rem;letter-spacing:.1em;
+  color:var(--lemon);
+  text-shadow:0 0 24px var(--lemon-glow);
+  white-space:nowrap;
+}
+.hstats{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+.hstat{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.hstat .hl{font-size:.55rem;color:var(--text-dim);letter-spacing:.18em;text-transform:uppercase}
+.hstat .hv{font-size:.85rem;color:var(--lemon);font-weight:500}
+.save-indicator{
+  font-size:.6rem;color:var(--text-dim);letter-spacing:.1em;
+  display:flex;align-items:center;gap:5px;
+}
+.save-dot{width:6px;height:6px;border-radius:50%;background:var(--text-dim);transition:background .3s}
+.save-dot.saved{background:var(--ok)}
+
+/* MAIN LAYOUT */
+.layout{
+  display:grid;
+  grid-template-columns:260px 1fr 260px;
+  flex:1;
+  overflow:hidden;
+  min-height:0;
+}
+
+/* PANELS */
+.panel{
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:14px 12px;
+  background:var(--surface);
+}
+.panel-left{border-right:1px solid var(--border)}
+.panel-right{border-left:1px solid var(--border)}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.section-title{
+  font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--text-dim);margin-bottom:10px;padding-bottom:6px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.section-title span{color:var(--lemon);font-size:.65rem}
+
+/* TABS (left panel) */
+.tabs{display:flex;gap:4px;margin-bottom:12px}
+.tab{
+  flex:1;padding:6px 4px;text-align:center;font-size:.62rem;
+  font-family:'DM Mono',monospace;letter-spacing:.08em;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;cursor:pointer;color:var(--text-dim);
+  transition:all .15s;
+}
+.tab:hover{border-color:var(--border2);color:var(--text-mid)}
+.tab.active{background:var(--lemon-pale);border-color:var(--lemon-dim);color:var(--lemon)}
+
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* UPGRADE CARDS */
+.upg-card{
+  display:flex;align-items:center;gap:9px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:9px 10px;margin-bottom:7px;
+  cursor:pointer;transition:all .15s;position:relative;overflow:hidden;
+}
+.upg-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,var(--lemon-pale),transparent);
+  opacity:0;transition:opacity .2s;
+}
+.upg-card:hover::before{opacity:1}
+.upg-card:hover{border-color:var(--lemon-dim);transform:translateX(2px)}
+.upg-card.can-buy{border-color:rgba(245,208,0,.28)}
+.upg-card.can-buy:hover{border-color:var(--lemon);box-shadow:0 0 10px var(--lemon-glow)}
+.upg-card.bought{opacity:.35;cursor:default;pointer-events:none}
+.upg-card.bought:hover{transform:none}
+.upg-icon{font-size:1.4rem;flex-shrink:0}
+.upg-body{flex:1;min-width:0}
+.upg-name{font-size:.75rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.upg-desc{font-size:.6rem;color:var(--text-dim);margin-top:1px}
+.upg-cost{font-size:.7rem;color:var(--lemon);flex-shrink:0}
+.upg-cost.dim{color:var(--text-dim)}
+
+/* SKIN CARDS */
+.skin-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}
+.skin-card{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:10px 8px;
+  cursor:pointer;transition:all .2s;text-align:center;position:relative;
+}
+.skin-card:hover{border-color:var(--lemon-dim)}
+.skin-card.active-skin{
+  border-color:var(--lemon);
+  background:var(--lemon-pale);
+  box-shadow:0 0 12px var(--lemon-glow);
+}
+.skin-card.locked{opacity:.5;filter:grayscale(.7)}
+.skin-card.locked:hover{border-color:var(--border)}
+.skin-emoji{font-size:2rem;line-height:1}
+.skin-name{font-size:.62rem;color:var(--text);font-weight:500}
+.skin-bonus{font-size:.58rem;color:var(--acid)}
+.skin-unlock{font-size:.55rem;color:var(--text-dim);margin-top:1px}
+.skin-badge{
+  position:absolute;top:4px;right:4px;
+  font-size:.5rem;background:var(--lemon);color:#000;
+  border-radius:4px;padding:1px 4px;font-weight:700;letter-spacing:.05em;
+}
+
+/* CENTER */
+.center{
+  display:flex;flex-direction:column;align-items:center;
+  padding:24px 16px;gap:18px;overflow-y:auto;
+  background:var(--bg);
+}
+
+.count-display{text-align:center}
+.big-num{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:4rem;color:var(--lemon);line-height:1;
+  text-shadow:0 0 50px rgba(245,208,0,.25);
+  letter-spacing:.04em;
+  transition:text-shadow .2s;
+}
+.big-num.flash{text-shadow:0 0 80px rgba(245,208,0,.7)}
+.count-sub{font-size:.62rem;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase;margin-top:3px}
+
+/* CLICKER */
+.clicker-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:200px;height:200px}
+.glow-ring{
+  position:absolute;width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,208,0,.12) 0%,transparent 70%);
+  animation:pulse-r 2.8s ease-in-out infinite;
+  pointer-events:none;
+}
+.glow-ring2{
+  position:absolute;width:240px;height:240px;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,208,0,.05) 0%,transparent 65%);
+  animation:pulse-r 2.8s ease-in-out infinite;
+  animation-delay:1.4s;
+  pointer-events:none;
+}
+@keyframes pulse-r{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.1);opacity:1}}
+
+.main-lemon{
+  font-size:6.5rem;cursor:pointer;user-select:none;
+  transition:transform .08s ease,filter .08s ease;
+  filter:drop-shadow(0 0 18px rgba(245,208,0,.4));
+  position:relative;z-index:2;
+  animation:float-l 3.2s ease-in-out infinite;
+}
+@keyframes float-l{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.main-lemon:active{transform:scale(.86) translateY(3px) !important;filter:drop-shadow(0 0 36px rgba(245,208,0,.9)) !important;animation-play-state:paused}
+
+/* STATS BAR */
+.stats-bar{
+  display:flex;gap:0;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+  width:100%;max-width:380px;
+}
+.sbar-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  gap:2px;padding:10px 8px;
+  border-right:1px solid var(--border);
+}
+.sbar-item:last-child{border-right:none}
+.sbar-label{font-size:.52rem;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase}
+.sbar-val{font-size:.82rem;color:var(--acid);font-weight:500}
+
+/* ACHIEVEMENTS STRIP */
+.ach-strip{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:420px}
+.ach{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;padding:5px 9px;
+  font-size:.6rem;color:var(--text-dim);
+  display:flex;align-items:center;gap:4px;
+  transition:all .3s ease;
+  white-space:nowrap;
+}
+.ach.done{border-color:var(--lemon-dim);color:var(--lemon);background:var(--lemon-pale)}
+
+/* PRESTIGE */
+.prestige-section{display:flex;flex-direction:column;align-items:center;gap:6px}
+.prestige-btn{
+  background:transparent;border:1px solid #333;
+  color:var(--text-dim);border-radius:var(--radius);
+  padding:8px 22px;font-family:'DM Mono',monospace;
+  font-size:.68rem;cursor:pointer;letter-spacing:.12em;
+  text-transform:uppercase;transition:all .2s ease;
+}
+.prestige-btn:hover{border-color:var(--danger);color:var(--danger)}
+.prestige-btn.ready{border-color:var(--danger);color:var(--danger);animation:dpulse 1.6s ease-in-out infinite}
+@keyframes dpulse{0%,100%{box-shadow:none}50%{box-shadow:0 0 18px rgba(255,68,85,.3)}}
+.prestige-info{font-size:.58rem;color:var(--text-dim);text-align:center}
+
+/* GENERATORS */
+.gen-card{
+  display:grid;grid-template-columns:auto 1fr auto;
+  align-items:center;gap:10px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:11px 11px 13px;
+  margin-bottom:7px;cursor:pointer;transition:all .15s;
+  position:relative;overflow:hidden;
+}
+.gen-card::after{
+  content:'';position:absolute;bottom:0;left:0;height:2px;
+  background:linear-gradient(90deg,var(--lemon),var(--acid));
+  width:var(--prog,0%);transition:width .4s ease;
+}
+.gen-card:hover{border-color:var(--lemon-dim)}
+.gen-card.can-buy{border-color:rgba(245,208,0,.25)}
+.gen-card.can-buy:hover{border-color:var(--lemon);box-shadow:0 0 14px var(--lemon-glow)}
+.gen-emoji{font-size:1.65rem}
+.gen-name{font-size:.76rem;font-weight:500;color:var(--text)}
+.gen-rate{font-size:.58rem;color:var(--text-dim);margin-top:1px}
+.gen-right{text-align:right}
+.gen-count{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--lemon);line-height:1}
+.gen-cost{font-size:.62rem;color:var(--text-dim);margin-top:2px}
+.gen-cost.af{color:var(--lemon-dim)}
+
+/* BULK BUY */
+.bulk-row{display:flex;gap:5px;margin-bottom:10px}
+.bulk-btn{
+  flex:1;padding:5px 4px;text-align:center;font-size:.6rem;
+  font-family:'DM Mono',monospace;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;cursor:pointer;color:var(--text-dim);
+  transition:all .15s;
+}
+.bulk-btn:hover{border-color:var(--border2);color:var(--text)}
+.bulk-btn.active{background:var(--lemon-pale);border-color:var(--lemon-dim);color:var(--lemon)}
+
+/* PARTICLE */
+.particle{
+  position:fixed;pointer-events:none;
+  font-size:1.1rem;font-weight:500;color:var(--lemon);
+  text-shadow:0 0 8px var(--lemon);
+  font-family:'DM Mono',monospace;z-index:8000;
+  animation:flyup .85s ease-out forwards;
+}
+@keyframes flyup{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-75px) scale(.6)}}
+
+/* TOAST */
+#toasts{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:9000;display:flex;flex-direction:column;gap:7px;align-items:center;pointer-events:none}
+.toast{
+  background:var(--surface2);border:1px solid var(--lemon-dim);color:var(--lemon);
+  padding:9px 18px;border-radius:8px;font-size:.74rem;
+  animation:tin .25s ease,tout .25s ease 2.2s forwards;
+  box-shadow:0 0 18px var(--lemon-glow);white-space:nowrap;
+}
+@keyframes tin{from{opacity:0;transform:translateY(10px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-5px)}}
+
+/* MODAL */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:7000;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(3px);
+}
+.modal-bg.hidden{display:none}
+.modal{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:12px;padding:28px;max-width:380px;width:90%;
+  box-shadow:0 0 40px rgba(0,0,0,.6);
+}
+.modal h2{font-family:'Bebas Neue',sans-serif;color:var(--lemon);font-size:1.8rem;letter-spacing:.08em;margin-bottom:8px}
+.modal p{font-size:.72rem;color:var(--text-mid);line-height:1.6;margin-bottom:18px}
+.modal-btns{display:flex;gap:10px}
+.mbtn{
+  flex:1;padding:9px;font-family:'DM Mono',monospace;font-size:.7rem;
+  border-radius:7px;cursor:pointer;letter-spacing:.1em;text-transform:uppercase;
+  transition:all .15s;
+}
+.mbtn-cancel{background:var(--surface2);border:1px solid var(--border2);color:var(--text-mid)}
+.mbtn-cancel:hover{border-color:var(--text-mid);color:var(--text)}
+.mbtn-confirm{background:transparent;border:1px solid var(--danger);color:var(--danger)}
+.mbtn-confirm:hover{background:rgba(255,68,85,.1)}
 </style>
 </head>
 <body>
 
-<div class="app">
+<!-- HEADER -->
+<header>
+  <div class="logo">🍋 Lemon Empire</div>
+  <div class="hstats">
+    <div class="hstat"><span class="hl">Total Squeezed</span><span class="hv" id="h-total">0</span></div>
+    <div class="hstat"><span class="hl">Per Second</span><span class="hv" id="h-lps">0/s</span></div>
+    <div class="hstat"><span class="hl">Prestige</span><span class="hv" id="h-prestige">Lv.0</span></div>
+    <div class="hstat"><span class="hl">Skin</span><span class="hv" id="h-skin">Classic</span></div>
+  </div>
+  <div class="save-indicator">
+    <div class="save-dot" id="save-dot"></div>
+    <span id="save-txt">Saved</span>
+  </div>
+</header>
 
-  <!-- HEADER -->
-  <header>
-    <div class="logo"><span>🍋</span> LEMON EMPIRE</div>
-    <div class="header-stats">
-      <div class="stat-pill">
-        <span class="label">Total Squeezed</span>
-        <span class="value" id="total-lemons">0</span>
-      </div>
-      <div class="stat-pill">
-        <span class="label">Per Second</span>
-        <span class="value" id="header-lps">0/s</span>
-      </div>
-      <div class="stat-pill">
-        <span class="label">Prestige</span>
-        <span class="value" id="prestige-count">×1</span>
-      </div>
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT PANEL -->
+  <div class="panel panel-left">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('upgrades')">⚡ Upgrades</div>
+      <div class="tab" onclick="switchTab('skins')">🎨 Skins</div>
+      <div class="tab" onclick="switchTab('stats')">📊 Stats</div>
     </div>
-  </header>
 
-  <!-- LEFT: UPGRADES -->
-  <div class="sidebar-left">
-    <div class="section-title">⚡ Upgrades</div>
-    <div id="upgrades-list"></div>
+    <!-- UPGRADES TAB -->
+    <div class="tab-content active" id="tab-upgrades">
+      <div class="section-title">Click Upgrades</div>
+      <div id="click-upgrades"></div>
+      <div class="section-title" style="margin-top:10px">Production Upgrades</div>
+      <div id="prod-upgrades"></div>
+      <div class="section-title" style="margin-top:10px">Special Upgrades</div>
+      <div id="special-upgrades"></div>
+    </div>
+
+    <!-- SKINS TAB -->
+    <div class="tab-content" id="tab-skins">
+      <div class="section-title">Lemon Skins <span id="skins-unlocked">0/0</span></div>
+      <div class="skin-grid" id="skin-grid"></div>
+    </div>
+
+    <!-- STATS TAB -->
+    <div class="tab-content" id="tab-stats">
+      <div class="section-title">Lifetime Stats</div>
+      <div id="stats-list" style="font-size:.68rem;line-height:2;color:var(--text-mid)"></div>
+    </div>
   </div>
 
   <!-- CENTER -->
   <div class="center">
-    <div class="lemon-count-display">
-      <div class="big-number" id="lemon-count">0</div>
-      <div class="sub">🍋 Lemons in stock</div>
+    <div class="count-display">
+      <div class="big-num" id="lemon-count">0</div>
+      <div class="count-sub">🍋 lemons in stock</div>
     </div>
 
     <div class="clicker-wrap">
+      <div class="glow-ring2"></div>
       <div class="glow-ring"></div>
-      <div class="main-lemon" id="main-lemon" title="Click to squeeze!">🍋</div>
+      <div class="main-lemon" id="main-lemon">🍋</div>
     </div>
 
-    <div class="rate-bar">
-      <div class="rate-item">
-        <span class="r-label">Per Click</span>
-        <span class="r-val" id="per-click">1</span>
-      </div>
-      <div class="rate-item">
-        <span class="r-label">Per Second</span>
-        <span class="r-val" id="per-sec">0</span>
-      </div>
-      <div class="rate-item">
-        <span class="r-label">Multiplier</span>
-        <span class="r-val" id="multiplier">×1</span>
-      </div>
+    <div class="stats-bar">
+      <div class="sbar-item"><span class="sbar-label">Per Click</span><span class="sbar-val" id="s-click">1</span></div>
+      <div class="sbar-item"><span class="sbar-label">Per Second</span><span class="sbar-val" id="s-lps">0</span></div>
+      <div class="sbar-item"><span class="sbar-label">Multiplier</span><span class="sbar-val" id="s-mult">×1</span></div>
+      <div class="sbar-item"><span class="sbar-label">Skin Bonus</span><span class="sbar-val" id="s-skin">×1</span></div>
     </div>
 
-    <div class="achievements-strip" id="achievements"></div>
+    <div class="ach-strip" id="ach-strip"></div>
 
-    <button class="prestige-btn" id="prestige-btn" onclick="prestige()">☢ Prestige Reset</button>
+    <div class="prestige-section">
+      <button class="prestige-btn" id="prestige-btn" onclick="openPrestige()">☢ Prestige Reset</button>
+      <div class="prestige-info" id="prestige-info">Requires 10M total lemons</div>
+    </div>
   </div>
 
-  <!-- RIGHT: GENERATORS -->
-  <div class="sidebar-right">
-    <div class="section-title">🏭 Generators</div>
-    <div id="generators-list"></div>
+  <!-- RIGHT PANEL -->
+  <div class="panel panel-right">
+    <div class="section-title">🏭 Generators <span id="gen-total-lps">0/s</span></div>
+    <div class="bulk-row">
+      <div class="bulk-btn active" onclick="setBulk(1)" id="bulk-1">×1</div>
+      <div class="bulk-btn" onclick="setBulk(10)" id="bulk-10">×10</div>
+      <div class="bulk-btn" onclick="setBulk(25)" id="bulk-25">×25</div>
+      <div class="bulk-btn" onclick="setBulk(100)" id="bulk-100">×100</div>
+      <div class="bulk-btn" onclick="setBulk('max')" id="bulk-max">MAX</div>
+    </div>
+    <div id="gen-list"></div>
   </div>
 
+</div>
+
+<!-- PRESTIGE MODAL -->
+<div class="modal-bg hidden" id="prestige-modal">
+  <div class="modal">
+    <h2>☢ Prestige</h2>
+    <p id="prestige-modal-text">You will lose all lemons, generators, and upgrades — but gain a permanent <strong style="color:var(--lemon)">×1.75</strong> multiplier stacking on top of previous prestiges. Your skins are kept.</p>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-cancel" onclick="closePrestige()">Cancel</button>
+      <button class="mbtn mbtn-confirm" onclick="doPrestige()">Prestige!</button>
+    </div>
+  </div>
 </div>
 
 <div id="toasts"></div>
 
 <script>
-// ============================================================
-// GAME STATE
-// ============================================================
-let state = {
-  lemons: 0,
-  total: 0,
-  clickPower: 1,
-  multiplier: 1,
-  prestige: 0,
-  generators: {},
-  upgrades: {}
-};
+// =====================================================================
+// DATA DEFINITIONS
+// =====================================================================
 
-// ============================================================
-// DATA
-// ============================================================
-const GENERATORS = [
-  { id: 'hand',      name: 'Hand Squeezer',    emoji: '✋', base: 15,   lps: 0.1,  desc: 'A tired hand doing its best.' },
-  { id: 'juicer',    name: 'Juicer',            emoji: '🫙', base: 100,  lps: 0.5,  desc: 'Basic but reliable citrus press.' },
-  { id: 'grove',     name: 'Lemon Grove',       emoji: '🌳', base: 500,  lps: 2,    desc: 'Your own slice of sunshine.' },
-  { id: 'factory',   name: 'Lemon Factory',     emoji: '🏭', base: 2500, lps: 10,   desc: 'Industrial-grade sour power.' },
-  { id: 'lab',       name: 'Citrus Lab',        emoji: '🔬', base: 10000,lps: 40,   desc: 'Science, but make it tart.' },
-  { id: 'planet',    name: 'Lemon Planet',      emoji: '🪐', base: 50000,lps: 200,  desc: 'An entire world of lemons.' },
-  { id: 'dimension', name: 'Citrus Dimension',  emoji: '🌀', base: 250000,lps:1000, desc: 'Beyond space. Beyond sour.' },
+const SKINS = [
+  { id:'classic',   emoji:'🍋', name:'Classic',      bonus:1,    unlockTotal:0,       desc:'The OG. Simple and sour.' },
+  { id:'golden',    emoji:'✨', name:'Golden',        bonus:2,    unlockTotal:1000,    desc:'For the lemon tycoon.' },
+  { id:'fire',      emoji:'🔥', name:'Fire Lemon',    bonus:3,    unlockTotal:10000,   desc:'Scorching citrus.' },
+  { id:'crystal',   emoji:'💎', name:'Crystal',       bonus:4,    unlockTotal:100000,  desc:'Flawless precision.' },
+  { id:'cosmic',    emoji:'🌙', name:'Cosmic',        bonus:5,    unlockTotal:1e6,     desc:'From beyond the stars.' },
+  { id:'radioactive',emoji:'☢️',name:'Radioactive',   bonus:7,    unlockTotal:5e6,     desc:'Dangerously tangy.' },
+  { id:'ghost',     emoji:'👻', name:'Ghost',         bonus:8,    unlockTotal:2e7,     desc:'Haunted, but citrusy.' },
+  { id:'dragon',    emoji:'🐉', name:'Dragon',        bonus:10,   unlockTotal:1e8,     desc:'Ancient lemon energy.' },
+  { id:'alien',     emoji:'👽', name:'Alien',         bonus:12,   unlockTotal:5e8,     desc:'Extraterrestrial squeeze.' },
+  { id:'galaxy',    emoji:'🌌', name:'Galaxy',        bonus:15,   unlockTotal:1e10,    desc:'Universe of sourness.' },
+  { id:'void',      emoji:'🕳️', name:'Void',          bonus:20,   unlockTotal:1e12,    desc:'Nothing. Lemon nothing.' },
+  { id:'god',       emoji:'⚡', name:'Lemon God',     bonus:50,   unlockTotal:1e15,    desc:'You are the citrus.' },
 ];
 
-const UPGRADES = [
-  { id: 'strong_hands',  name: 'Strong Hands',     emoji: '💪', cost: 50,     effect: () => { state.clickPower += 1; },    desc: '+1 per click',          maxBuy: 1 },
-  { id: 'iron_grip',     name: 'Iron Grip',         emoji: '🦾', cost: 200,    effect: () => { state.clickPower += 5; },    desc: '+5 per click',          maxBuy: 1 },
-  { id: 'double_squeeze',name: 'Double Squeeze',    emoji: '🍋', cost: 500,    effect: () => { state.multiplier *= 2; },    desc: '×2 all production',     maxBuy: 1 },
-  { id: 'lemon_cult',    name: 'Lemon Cult',        emoji: '🙏', cost: 2000,   effect: () => { state.multiplier *= 2; },    desc: '×2 all production',     maxBuy: 1 },
-  { id: 'zest_mode',     name: 'Zest Mode',         emoji: '⚡', cost: 5000,   effect: () => { state.clickPower += 20; },   desc: '+20 per click',         maxBuy: 1 },
-  { id: 'golden_lemon',  name: 'Golden Lemon',      emoji: '✨', cost: 20000,  effect: () => { state.multiplier *= 3; },    desc: '×3 all production',     maxBuy: 1 },
-  { id: 'sour_reactor',  name: 'Sour Reactor',      emoji: '☢️', cost: 100000, effect: () => { state.multiplier *= 5; },    desc: '×5 all production',     maxBuy: 1 },
-  { id: 'mega_click',    name: 'Mega Click',        emoji: '👊', cost: 50000,  effect: () => { state.clickPower += 100; },  desc: '+100 per click',        maxBuy: 1 },
+const CLICK_UPGRADES = [
+  { id:'cu1',  name:'Tough Squeeze',     emoji:'💪', cost:50,      effect:(s)=>{ s.clickPower+=1 },    desc:'+1 click power', category:'click' },
+  { id:'cu2',  name:'Iron Wrist',        emoji:'🦾', cost:250,     effect:(s)=>{ s.clickPower+=4 },    desc:'+4 click power', category:'click' },
+  { id:'cu3',  name:'Power Grip',        emoji:'⚡', cost:1500,    effect:(s)=>{ s.clickPower+=15 },   desc:'+15 click power', category:'click' },
+  { id:'cu4',  name:'Mega Squeeze',      emoji:'🏋️', cost:10000,   effect:(s)=>{ s.clickPower+=50 },   desc:'+50 click power', category:'click' },
+  { id:'cu5',  name:'Hydraulic Press',   emoji:'🔩', cost:75000,   effect:(s)=>{ s.clickPower+=200 },  desc:'+200 click power', category:'click' },
+  { id:'cu6',  name:'Quantum Click',     emoji:'🔮', cost:500000,  effect:(s)=>{ s.clickPower+=1000 }, desc:'+1,000 click power', category:'click' },
+  { id:'cu7',  name:'God Hand',          emoji:'🌟', cost:5e6,     effect:(s)=>{ s.clickPower+=5000 }, desc:'+5,000 click power', category:'click' },
+  { id:'cu8',  name:'Singularity Tap',   emoji:'🌀', cost:5e8,     effect:(s)=>{ s.clickPower+=50000},  desc:'+50,000 click power', category:'click' },
+];
+
+const PROD_UPGRADES = [
+  { id:'pu1',  name:'Double Squeeze',    emoji:'🍋', cost:500,     effect:(s)=>{ s.multiplier*=2 },    desc:'×2 all production', category:'prod' },
+  { id:'pu2',  name:'Lemon Cult',        emoji:'🙏', cost:3000,    effect:(s)=>{ s.multiplier*=2 },    desc:'×2 all production', category:'prod' },
+  { id:'pu3',  name:'Golden Formula',    emoji:'✨', cost:20000,   effect:(s)=>{ s.multiplier*=3 },    desc:'×3 all production', category:'prod' },
+  { id:'pu4',  name:'Sour Reactor',      emoji:'⚗️', cost:150000,  effect:(s)=>{ s.multiplier*=3 },    desc:'×3 all production', category:'prod' },
+  { id:'pu5',  name:'Hyper Juicer',      emoji:'🚀', cost:1e6,     effect:(s)=>{ s.multiplier*=4 },    desc:'×4 all production', category:'prod' },
+  { id:'pu6',  name:'Dark Matter Juice', emoji:'🌑', cost:1e7,     effect:(s)=>{ s.multiplier*=5 },    desc:'×5 all production', category:'prod' },
+  { id:'pu7',  name:'Lemon Singularity', emoji:'💫', cost:1e9,     effect:(s)=>{ s.multiplier*=10 },   desc:'×10 all production', category:'prod' },
+  { id:'pu8',  name:'Citrus Infinity',   emoji:'♾️', cost:1e12,    effect:(s)=>{ s.multiplier*=20 },   desc:'×20 all production', category:'prod' },
+];
+
+const SPECIAL_UPGRADES = [
+  { id:'sp1',  name:'Zest Protocol',     emoji:'🧪', cost:5000,    effect:(s)=>{ s.clickMultiplier*=1.5 }, desc:'Clicks ×1.5 more juice', category:'special' },
+  { id:'sp2',  name:'Auto-Squeezer',     emoji:'🤖', cost:25000,   effect:(s)=>{ s.autoClick=true },       desc:'Auto-clicks 1×/sec', category:'special' },
+  { id:'sp3',  name:'Lemon Market',      emoji:'📈', cost:100000,  effect:(s)=>{ s.multiplier*=2; s.clickPower+=100 }, desc:'×2 prod +100 click', category:'special' },
+  { id:'sp4',  name:'Time Warp Juice',   emoji:'⏰', cost:500000,  effect:(s)=>{ s.multiplier*=3 },        desc:'×3 all + retroactive', category:'special' },
+  { id:'sp5',  name:'Lemon Weather',     emoji:'⛅', cost:2e6,     effect:(s)=>{ s.multiplier*=4 },        desc:'It rains lemons ×4', category:'special' },
+  { id:'sp6',  name:'Citrus Dimension',  emoji:'🌀', cost:2e7,     effect:(s)=>{ s.multiplier*=6; s.clickPower+=5000 }, desc:'×6 all +5k click', category:'special' },
+  { id:'sp7',  name:'Lemon God Mode',    emoji:'👑', cost:5e8,     effect:(s)=>{ s.multiplier*=10; s.clickMultiplier*=2 }, desc:'×10 all, clicks×2', category:'special' },
+];
+
+const GENERATORS = [
+  { id:'hand',      name:'Hand Squeezer',      emoji:'✋', base:15,     lps:.1,   desc:'A tireless hand.' },
+  { id:'juicer',    name:'Citrus Juicer',       emoji:'🫙', base:100,    lps:.5,   desc:'Basic press, reliable.' },
+  { id:'grove',     name:'Lemon Grove',         emoji:'🌳', base:600,    lps:2.5,  desc:'Your own orchard.' },
+  { id:'factory',   name:'Juice Factory',       emoji:'🏭', base:3000,   lps:12,   desc:'Industrial sour power.' },
+  { id:'lab',       name:'Citrus Lab',          emoji:'🔬', base:15000,  lps:50,   desc:'Science + tartness.' },
+  { id:'drone',     name:'Lemon Drone Swarm',   emoji:'🚁', base:60000,  lps:200,  desc:'Aerial citrus ops.' },
+  { id:'planet',    name:'Lemon Planet',        emoji:'🪐', base:300000, lps:900,  desc:'A whole world of sour.' },
+  { id:'star',      name:'Citrus Star',         emoji:'⭐', base:2e6,    lps:4000, desc:'Nuclear lemon fusion.' },
+  { id:'blackhole', name:'Lemon Black Hole',    emoji:'🕳️', base:2e7,    lps:20000,desc:'Gravity = lemons.' },
+  { id:'dimension', name:'Citrus Dimension',    emoji:'🌀', base:2e8,    lps:1e5,  desc:'Beyond space and sour.' },
+  { id:'multiverse',name:'Lemon Multiverse',    emoji:'🌌', base:2e9,    lps:5e5,  desc:'Infinite parallel lemons.' },
+  { id:'godmachine',name:'God Machine',         emoji:'⚙️', base:2e11,   lps:5e6,  desc:'Divine lemon apparatus.' },
 ];
 
 const ACHIEVEMENTS = [
-  { id: 'first',    name: 'First Drop',      emoji: '🍋', condition: () => state.total >= 1 },
-  { id: 'hundred',  name: 'Century',         emoji: '💯', condition: () => state.total >= 100 },
-  { id: 'thousand', name: 'Kilo Lemon',      emoji: '🏆', condition: () => state.total >= 1000 },
-  { id: 'million',  name: 'Millionaire',     emoji: '💰', condition: () => state.total >= 1e6 },
-  { id: 'billion',  name: 'Lemon Tycoon',    emoji: '🌟', condition: () => state.total >= 1e9 },
-  { id: 'prestige', name: 'Prestige Baron',  emoji: '☢', condition: () => state.prestige >= 1 },
-  { id: 'maxgen',   name: 'Full Factory',    emoji: '🏭', condition: () => Object.values(state.generators).some(v => v >= 10) },
+  { id:'a1',  name:'First Squeeze',    emoji:'🍋', cond:(s)=>s.totalLemons>=1 },
+  { id:'a2',  name:'Lemon Baby',       emoji:'👶', cond:(s)=>s.totalLemons>=100 },
+  { id:'a3',  name:'Juice Apprentice', emoji:'🎓', cond:(s)=>s.totalLemons>=1000 },
+  { id:'a4',  name:'Kilo-Lemon',       emoji:'💯', cond:(s)=>s.totalLemons>=1e4 },
+  { id:'a5',  name:'Lemon Mill.',      emoji:'💰', cond:(s)=>s.totalLemons>=1e6 },
+  { id:'a6',  name:'Juice Tycoon',     emoji:'🏆', cond:(s)=>s.totalLemons>=1e9 },
+  { id:'a7',  name:'Galactic Sour',    emoji:'🌌', cond:(s)=>s.totalLemons>=1e12 },
+  { id:'a8',  name:'God of Lemons',    emoji:'⚡', cond:(s)=>s.totalLemons>=1e18 },
+  { id:'a9',  name:'First Factory',    emoji:'🏭', cond:(s)=>(s.generators['hand']||0)>=1 },
+  { id:'a10', name:'10 Juicers',       emoji:'🫙', cond:(s)=>(s.generators['juicer']||0)>=10 },
+  { id:'a11', name:'Lemon Grove',      emoji:'🌳', cond:(s)=>(s.generators['grove']||0)>=1 },
+  { id:'a12', name:'Planetary',        emoji:'🪐', cond:(s)=>(s.generators['planet']||0)>=1 },
+  { id:'a13', name:'Prestige Baron',   emoji:'☢', cond:(s)=>s.prestigeCount>=1 },
+  { id:'a14', name:'Triple Prestige',  emoji:'🔱', cond:(s)=>s.prestigeCount>=3 },
+  { id:'a15', name:'Skin Collector',   emoji:'🎨', cond:(s)=>s.unlockedSkins.length>=5 },
+  { id:'a16', name:'Auto Squeezer',    emoji:'🤖', cond:(s)=>s.upgrades['sp2'] },
+  { id:'a17', name:'Speed Demon',      emoji:'💨', cond:(s)=>totalLPS(s)>=1000 },
+  { id:'a18', name:'LPS Godlike',      emoji:'🚀', cond:(s)=>totalLPS(s)>=1e6 },
+  { id:'a19', name:'Click Master',     emoji:'👊', cond:(s)=>s.totalClicks>=10000 },
+  { id:'a20', name:'Multiverse',       emoji:'🌀', cond:(s)=>(s.generators['multiverse']||0)>=1 },
 ];
 
-// ============================================================
-// HELPERS
-// ============================================================
-function fmt(n) {
-  if (n >= 1e12) return (n/1e12).toFixed(2) + 'T';
-  if (n >= 1e9)  return (n/1e9).toFixed(2) + 'B';
-  if (n >= 1e6)  return (n/1e6).toFixed(2) + 'M';
-  if (n >= 1e3)  return (n/1e3).toFixed(1) + 'K';
-  return Math.floor(n).toString();
+// =====================================================================
+// STATE
+// =====================================================================
+function defaultState() {
+  return {
+    lemons: 0,
+    totalLemons: 0,
+    totalClicks: 0,
+    clickPower: 1,
+    clickMultiplier: 1,
+    multiplier: 1,
+    autoClick: false,
+    prestigeCount: 0,
+    prestigeMultiplier: 1,
+    generators: {},
+    upgrades: {},
+    activeSkin: 'classic',
+    unlockedSkins: ['classic'],
+    achievementsUnlocked: [],
+    sessionStart: Date.now(),
+  };
 }
 
-function genCount(id) { return state.generators[id] || 0; }
+let state = defaultState();
+let bulkAmt = 1;
 
-function genCost(gen) {
-  return Math.floor(gen.base * Math.pow(1.15, genCount(gen.id)));
+// =====================================================================
+// SAVE / LOAD
+// =====================================================================
+function saveGame() {
+  try {
+    localStorage.setItem('lemon_empire_v2', JSON.stringify(state));
+    const dot = document.getElementById('save-dot');
+    const txt = document.getElementById('save-txt');
+    dot.classList.add('saved');
+    txt.textContent = 'Saved ' + new Date().toLocaleTimeString();
+    setTimeout(()=>dot.classList.remove('saved'), 1500);
+  } catch(e) {}
 }
 
-function totalLPS() {
-  let lps = 0;
-  for (const gen of GENERATORS) {
-    lps += genCount(gen.id) * gen.lps;
+function loadGame() {
+  try {
+    const raw = localStorage.getItem('lemon_empire_v2');
+    if (!raw) return;
+    const loaded = JSON.parse(raw);
+    // merge to handle new fields
+    state = Object.assign(defaultState(), loaded);
+    // re-apply all bought upgrades to rebuild clickPower/multiplier from scratch
+    rebuildFromUpgrades();
+  } catch(e) {
+    console.warn('Load failed, starting fresh.');
   }
-  return lps * state.multiplier;
+}
+
+function rebuildFromUpgrades() {
+  // Reset derived stats and reapply
+  const s = defaultState();
+  s.lemons = state.lemons;
+  s.totalLemons = state.totalLemons;
+  s.totalClicks = state.totalClicks;
+  s.prestigeCount = state.prestigeCount;
+  s.prestigeMultiplier = state.prestigeMultiplier;
+  s.multiplier = state.prestigeMultiplier;
+  s.generators = state.generators;
+  s.upgrades = state.upgrades;
+  s.activeSkin = state.activeSkin;
+  s.unlockedSkins = state.unlockedSkins;
+  s.achievementsUnlocked = state.achievementsUnlocked;
+  s.autoClick = false;
+  s.clickMultiplier = 1;
+
+  const allUpgrades = [...CLICK_UPGRADES, ...PROD_UPGRADES, ...SPECIAL_UPGRADES];
+  for (const up of allUpgrades) {
+    if (state.upgrades[up.id]) up.effect(s);
+  }
+  state = s;
+}
+
+// =====================================================================
+// HELPERS
+// =====================================================================
+function fmt(n) {
+  n = Math.floor(n);
+  if (n >= 1e18) return (n/1e18).toFixed(2)+'Qi';
+  if (n >= 1e15) return (n/1e15).toFixed(2)+'Qa';
+  if (n >= 1e12) return (n/1e12).toFixed(2)+'T';
+  if (n >= 1e9)  return (n/1e9).toFixed(2)+'B';
+  if (n >= 1e6)  return (n/1e6).toFixed(2)+'M';
+  if (n >= 1e3)  return (n/1e3).toFixed(1)+'K';
+  return n.toString();
+}
+
+function fmtDec(n) {
+  if (n >= 1e6) return fmt(n);
+  if (n >= 1000) return (n/1000).toFixed(1)+'K';
+  if (n >= 10) return n.toFixed(1);
+  return n.toFixed(2);
+}
+
+function skinBonus() {
+  const skin = SKINS.find(s=>s.id===state.activeSkin);
+  return skin ? skin.bonus : 1;
+}
+
+function effectiveClickPower() {
+  return Math.max(1, Math.floor(state.clickPower * state.clickMultiplier * skinBonus()));
+}
+
+function totalLPS(s) {
+  s = s || state;
+  let lps = 0;
+  for (const g of GENERATORS) lps += (s.generators[g.id]||0) * g.lps;
+  return lps * s.multiplier;
+}
+
+function genCost(gen, qty) {
+  qty = qty || 1;
+  const owned = state.generators[gen.id]||0;
+  // sum of geometric series
+  return Math.floor(gen.base * (Math.pow(1.15, owned) * (Math.pow(1.15, qty) - 1)) / 0.15);
+}
+
+function maxBuyable(gen) {
+  let owned = state.generators[gen.id]||0;
+  let budget = state.lemons;
+  let qty = 0;
+  let cost = gen.base * Math.pow(1.15, owned);
+  while (budget >= cost) {
+    budget -= cost;
+    owned++;
+    qty++;
+    cost = gen.base * Math.pow(1.15, owned);
+    if (qty > 10000) break;
+  }
+  return qty;
+}
+
+function getBulkCost(gen) {
+  if (bulkAmt === 'max') {
+    const max = maxBuyable(gen);
+    if (max === 0) return { qty: 0, cost: genCost(gen, 1) };
+    return { qty: max, cost: genCost(gen, max) };
+  }
+  return { qty: bulkAmt, cost: genCost(gen, bulkAmt) };
+}
+
+// =====================================================================
+// RENDER
+// =====================================================================
+function renderUpgrades() {
+  function buildList(container, list) {
+    const el = document.getElementById(container);
+    el.innerHTML = '';
+    for (const up of list) {
+      const bought = state.upgrades[up.id];
+      const can = state.lemons >= up.cost && !bought;
+      const card = document.createElement('div');
+      card.className = 'upg-card' + (bought?' bought':can?' can-buy':'');
+      card.innerHTML = `
+        <span class="upg-icon">${up.emoji}</span>
+        <div class="upg-body">
+          <div class="upg-name">${up.name}</div>
+          <div class="upg-desc">${bought?'✓ Purchased':up.desc}</div>
+        </div>
+        <div class="upg-cost ${!can&&!bought?'dim':''}">
+          ${bought?'✓':'🍋'+fmt(up.cost)}
+        </div>`;
+      if (!bought) card.onclick = ()=>buyUpgrade(up.id);
+      el.appendChild(card);
+    }
+  }
+  buildList('click-upgrades', CLICK_UPGRADES);
+  buildList('prod-upgrades', PROD_UPGRADES);
+  buildList('special-upgrades', SPECIAL_UPGRADES);
+}
+
+function renderSkins() {
+  const grid = document.getElementById('skin-grid');
+  grid.innerHTML = '';
+  let unlocked = 0;
+  for (const sk of SKINS) {
+    const isUnlocked = state.unlockedSkins.includes(sk.id) || state.totalLemons >= sk.unlockTotal;
+    if (isUnlocked && !state.unlockedSkins.includes(sk.id)) {
+      state.unlockedSkins.push(sk.id);
+      toast(`🎨 Skin Unlocked: ${sk.emoji} ${sk.name}!`);
+    }
+    if (isUnlocked) unlocked++;
+    const isActive = state.activeSkin === sk.id;
+    const card = document.createElement('div');
+    card.className = 'skin-card' + (isActive?' active-skin':'') + (!isUnlocked?' locked':'');
+    card.innerHTML = `
+      ${isActive?'<div class="skin-badge">ON</div>':''}
+      <div class="skin-emoji">${sk.emoji}</div>
+      <div class="skin-name">${sk.name}</div>
+      <div class="skin-bonus">+${sk.bonus}× click</div>
+      <div class="skin-unlock">${isUnlocked?'Unlocked':'🍋'+fmt(sk.unlockTotal)+' total'}</div>`;
+    if (isUnlocked) card.onclick = ()=>activateSkin(sk.id);
+    grid.appendChild(card);
+  }
+  document.getElementById('skins-unlocked').textContent = unlocked+'/'+SKINS.length;
+}
+
+function renderGenerators() {
+  const el = document.getElementById('gen-list');
+  el.innerHTML = '';
+  let totalLps = 0;
+  for (const gen of GENERATORS) {
+    const owned = state.generators[gen.id]||0;
+    totalLps += owned * gen.lps * state.multiplier;
+    const { qty, cost } = getBulkCost(gen);
+    const can = qty > 0 && state.lemons >= cost;
+    const prog = Math.min(100, (state.lemons / cost) * 100);
+    const card = document.createElement('div');
+    card.className = 'gen-card' + (can?' can-buy':'');
+    card.style.setProperty('--prog', prog+'%');
+    const buyLabel = bulkAmt==='max' ? (qty>0?`×${qty}`:'×0') : `×${bulkAmt}`;
+    card.innerHTML = `
+      <span class="gen-emoji">${gen.emoji}</span>
+      <div>
+        <div class="gen-name">${gen.name}</div>
+        <div class="gen-rate">${fmtDec(gen.lps * state.multiplier)}/s each — ${gen.desc}</div>
+      </div>
+      <div class="gen-right">
+        <div class="gen-count">${owned}</div>
+        <div class="gen-cost ${can?'af':''}">🍋${fmt(cost)} ${buyLabel}</div>
+      </div>`;
+    card.onclick = ()=>buyGenerator(gen.id);
+    el.appendChild(card);
+  }
+  document.getElementById('gen-total-lps').textContent = fmtDec(totalLps)+'/s';
+}
+
+function renderAchievements() {
+  const el = document.getElementById('ach-strip');
+  el.innerHTML = '';
+  for (const a of ACHIEVEMENTS) {
+    const done = state.achievementsUnlocked.includes(a.id);
+    const div = document.createElement('div');
+    div.className = 'ach'+(done?' done':'');
+    div.textContent = a.emoji+' '+a.name;
+    el.appendChild(div);
+  }
+}
+
+function renderStats() {
+  const el = document.getElementById('stats-list');
+  el.innerHTML = `
+    <div>Total Lemons: <span style="color:var(--lemon)">${fmt(state.totalLemons)}</span></div>
+    <div>Total Clicks: <span style="color:var(--lemon)">${fmt(state.totalClicks)}</span></div>
+    <div>Prestige Level: <span style="color:var(--lemon)">${state.prestigeCount}</span></div>
+    <div>Prestige Mult: <span style="color:var(--lemon)">×${state.prestigeMultiplier.toFixed(2)}</span></div>
+    <div>Current LPS: <span style="color:var(--lemon)">${fmtDec(totalLPS())}/s</span></div>
+    <div>Click Power: <span style="color:var(--lemon)">${fmt(effectiveClickPower())}</span></div>
+    <div>Active Skin: <span style="color:var(--lemon)">${SKINS.find(s=>s.id===state.activeSkin)?.emoji} ${SKINS.find(s=>s.id===state.activeSkin)?.name}</span></div>
+    <div>Skins Unlocked: <span style="color:var(--lemon)">${state.unlockedSkins.length}/${SKINS.length}</span></div>
+    <div>Achievements: <span style="color:var(--lemon)">${state.achievementsUnlocked.length}/${ACHIEVEMENTS.length}</span></div>
+    <div>Session Time: <span style="color:var(--lemon)">${fmtTime(Date.now()-state.sessionStart)}</span></div>
+  `;
+}
+
+function fmtTime(ms) {
+  const s = Math.floor(ms/1000);
+  const m = Math.floor(s/60), h = Math.floor(m/60);
+  if (h>0) return h+'h '+(m%60)+'m';
+  if (m>0) return m+'m '+(s%60)+'s';
+  return s+'s';
+}
+
+function updateHeader() {
+  const lps = totalLPS();
+  const skin = SKINS.find(s=>s.id===state.activeSkin);
+  document.getElementById('lemon-count').textContent = fmt(state.lemons);
+  document.getElementById('h-total').textContent = fmt(state.totalLemons);
+  document.getElementById('h-lps').textContent = fmtDec(lps)+'/s';
+  document.getElementById('h-prestige').textContent = 'Lv.'+state.prestigeCount;
+  document.getElementById('h-skin').textContent = (skin?.emoji||'')+' '+(skin?.name||'');
+  document.getElementById('s-click').textContent = fmt(effectiveClickPower());
+  document.getElementById('s-lps').textContent = fmtDec(lps);
+  document.getElementById('s-mult').textContent = '×'+state.multiplier.toFixed(1);
+  document.getElementById('s-skin').textContent = '×'+skinBonus();
+  document.getElementById('main-lemon').textContent = skin?.emoji || '🍋';
+
+  // prestige button
+  const pb = document.getElementById('prestige-btn');
+  const pi = document.getElementById('prestige-info');
+  const needed = 1e7 * Math.pow(5, state.prestigeCount);
+  if (state.totalLemons >= needed) {
+    pb.classList.add('ready');
+    pb.textContent = '☢ Prestige! (Ready)';
+    pi.textContent = `+×1.75 permanent bonus`;
+  } else {
+    pb.classList.remove('ready');
+    pb.textContent = '☢ Prestige Reset';
+    pi.textContent = `Need ${fmt(needed)} total lemons`;
+  }
+}
+
+// =====================================================================
+// ACTIONS
+// =====================================================================
+function handleClick(e) {
+  const gain = effectiveClickPower();
+  state.lemons += gain;
+  state.totalLemons += gain;
+  state.totalClicks++;
+
+  // flash
+  const cn = document.getElementById('lemon-count');
+  cn.classList.add('flash');
+  setTimeout(()=>cn.classList.remove('flash'), 150);
+
+  // particle
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.textContent = '+'+fmt(gain)+' 🍋';
+  p.style.left = (e.clientX - 28)+'px';
+  p.style.top  = (e.clientY - 8)+'px';
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(), 870);
+}
+
+function buyGenerator(id) {
+  const gen = GENERATORS.find(g=>g.id===id);
+  const { qty, cost } = getBulkCost(gen);
+  if (!qty || state.lemons < cost) return;
+  state.lemons -= cost;
+  state.generators[id] = (state.generators[id]||0) + qty;
+  const prev = (state.generators[id]||0) - qty;
+  if (prev === 0) toast(`🏭 First ${gen.name} online!`);
+}
+
+function buyUpgrade(id) {
+  const allUpgrades = [...CLICK_UPGRADES, ...PROD_UPGRADES, ...SPECIAL_UPGRADES];
+  const up = allUpgrades.find(u=>u.id===id);
+  if (!up || state.upgrades[id] || state.lemons < up.cost) return;
+  state.lemons -= up.cost;
+  state.upgrades[id] = true;
+  up.effect(state);
+  toast('⚡ Unlocked: '+up.name);
+}
+
+function activateSkin(id) {
+  if (!state.unlockedSkins.includes(id)) return;
+  state.activeSkin = id;
+  const sk = SKINS.find(s=>s.id===id);
+  toast(sk.emoji+' Skin equipped: '+sk.name+' (×'+sk.bonus+' click)');
+  renderSkins();
+  updateHeader();
+}
+
+function setBulk(n) {
+  bulkAmt = n;
+  document.querySelectorAll('.bulk-btn').forEach(b=>b.classList.remove('active'));
+  const map = {1:'bulk-1',10:'bulk-10',25:'bulk-25',100:'bulk-100','max':'bulk-max'};
+  document.getElementById(map[n])?.classList.add('active');
+}
+
+function openPrestige() {
+  const needed = 1e7 * Math.pow(5, state.prestigeCount);
+  if (state.totalLemons < needed) {
+    toast('🍋 Need '+fmt(needed)+' total lemons to prestige!');
+    return;
+  }
+  const nextMult = (state.prestigeMultiplier * 1.75).toFixed(2);
+  document.getElementById('prestige-modal-text').innerHTML =
+    `You will lose all lemons, generators, and upgrades — but your permanent multiplier becomes <strong style="color:var(--lemon)">×${nextMult}</strong>. Your skins and achievements are kept.`;
+  document.getElementById('prestige-modal').classList.remove('hidden');
+}
+
+function closePrestige() {
+  document.getElementById('prestige-modal').classList.add('hidden');
+}
+
+function doPrestige() {
+  closePrestige();
+  state.prestigeCount++;
+  state.prestigeMultiplier *= 1.75;
+  const pm = state.prestigeMultiplier;
+  const kept = { unlockedSkins: state.unlockedSkins, achievementsUnlocked: state.achievementsUnlocked, prestigeCount: state.prestigeCount, prestigeMultiplier: pm, totalLemons: state.totalLemons, totalClicks: state.totalClicks, sessionStart: state.sessionStart };
+  state = defaultState();
+  Object.assign(state, kept);
+  state.multiplier = pm;
+  toast('☢ Prestige '+state.prestigeCount+'! Multiplier ×'+pm.toFixed(2));
+  renderAll();
+}
+
+function checkAchievements() {
+  let changed = false;
+  for (const a of ACHIEVEMENTS) {
+    if (!state.achievementsUnlocked.includes(a.id) && a.cond(state)) {
+      state.achievementsUnlocked.push(a.id);
+      toast('🏆 Achievement: '+a.emoji+' '+a.name);
+      changed = true;
+    }
+  }
+  if (changed) renderAchievements();
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    const names = ['upgrades','skins','stats'];
+    t.classList.toggle('active', names[i]===name);
+  });
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if (name==='stats') renderStats();
+  if (name==='skins') renderSkins();
 }
 
 function toast(msg) {
@@ -668,202 +950,79 @@ function toast(msg) {
   t.className = 'toast';
   t.textContent = msg;
   document.getElementById('toasts').appendChild(t);
-  setTimeout(() => t.remove(), 2600);
+  setTimeout(()=>t.remove(), 2600);
 }
 
-// ============================================================
-// RENDER
-// ============================================================
-function renderUpgrades() {
-  const list = document.getElementById('upgrades-list');
-  list.innerHTML = '';
-  for (const up of UPGRADES) {
-    const bought = state.upgrades[up.id];
-    const affordable = state.lemons >= up.cost;
-    const card = document.createElement('div');
-    card.className = 'upgrade-card' + (bought ? ' maxed' : (affordable ? ' affordable' : ''));
-    card.innerHTML = `
-      <span class="upgrade-icon">${up.emoji}</span>
-      <div class="upgrade-info">
-        <div class="upgrade-name">${up.name}</div>
-        <div class="upgrade-desc">${bought ? '✓ Purchased' : up.desc}</div>
-      </div>
-      <div class="upgrade-cost ${!affordable && !bought ? 'cant-afford' : ''}">
-        ${bought ? '✓' : '🍋' + fmt(up.cost)}
-      </div>
-    `;
-    if (!bought) card.onclick = () => buyUpgrade(up.id);
-    list.appendChild(card);
-  }
-}
-
-function renderGenerators() {
-  const list = document.getElementById('generators-list');
-  list.innerHTML = '';
-  for (const gen of GENERATORS) {
-    const cost = genCost(gen);
-    const count = genCount(gen.id);
-    const affordable = state.lemons >= cost;
-    const card = document.createElement('div');
-    card.className = 'gen-card' + (affordable ? ' affordable' : '');
-    const progress = Math.min(100, (state.lemons / cost) * 100);
-    card.style.setProperty('--progress', progress + '%');
-    card.innerHTML = `
-      <span class="gen-emoji">${gen.emoji}</span>
-      <div class="gen-info">
-        <div class="gen-name">${gen.name}</div>
-        <div class="gen-rate">${gen.lps}/s each • ${gen.desc}</div>
-      </div>
-      <div class="gen-right">
-        <div class="gen-count">${count}</div>
-        <div class="gen-cost ${affordable ? 'affordable-cost' : ''}">🍋${fmt(cost)}</div>
-      </div>
-    `;
-    card.onclick = () => buyGenerator(gen.id);
-    list.appendChild(card);
-  }
-}
-
-function renderAchievements() {
-  const el = document.getElementById('achievements');
-  el.innerHTML = '';
-  for (const ach of ACHIEVEMENTS) {
-    const unlocked = ach.condition();
-    const div = document.createElement('div');
-    div.className = 'achievement' + (unlocked ? ' unlocked' : '');
-    div.innerHTML = `${ach.emoji} ${ach.name}`;
-    el.appendChild(div);
-  }
-}
-
-function updateStats() {
-  const lps = totalLPS();
-  document.getElementById('lemon-count').textContent = fmt(state.lemons);
-  document.getElementById('total-lemons').textContent = fmt(state.total);
-  document.getElementById('header-lps').textContent = fmt(lps) + '/s';
-  document.getElementById('per-click').textContent = fmt(state.clickPower * state.multiplier);
-  document.getElementById('per-sec').textContent = fmt(lps);
-  document.getElementById('multiplier').textContent = '×' + state.multiplier.toFixed(1);
-  document.getElementById('prestige-count').textContent = '×' + (state.prestige + 1);
-
-  const prestigeBtn = document.getElementById('prestige-btn');
-  if (state.total >= 1e6) {
-    prestigeBtn.classList.add('ready');
-    prestigeBtn.textContent = '☢ Prestige Reset (Ready!)';
-  } else {
-    prestigeBtn.classList.remove('ready');
-    prestigeBtn.textContent = '☢ Prestige (Need 1M total)';
-  }
-}
-
-// ============================================================
-// ACTIONS
-// ============================================================
-function click(e) {
-  const gain = Math.floor(state.clickPower * state.multiplier);
-  state.lemons += gain;
-  state.total += gain;
-
-  // particle
-  const p = document.createElement('div');
-  p.className = 'particle';
-  p.textContent = '+' + fmt(gain) + ' 🍋';
-  p.style.left = (e.clientX - 30) + 'px';
-  p.style.top  = (e.clientY - 10) + 'px';
-  document.body.appendChild(p);
-  setTimeout(() => p.remove(), 900);
-
-  checkAchievements();
-}
-
-function buyGenerator(id) {
-  const gen = GENERATORS.find(g => g.id === id);
-  const cost = genCost(gen);
-  if (state.lemons < cost) return;
-  state.lemons -= cost;
-  state.generators[id] = genCount(id) + 1;
-  if (genCount(id) === 1) toast(`🏭 Built your first ${gen.name}!`);
-  render();
-}
-
-function buyUpgrade(id) {
-  const up = UPGRADES.find(u => u.id === id);
-  if (!up || state.upgrades[id] || state.lemons < up.cost) return;
-  state.lemons -= up.cost;
-  state.upgrades[id] = true;
-  up.effect();
-  toast(`⚡ Unlocked: ${up.name}`);
-  render();
-}
-
-function prestige() {
-  if (state.total < 1e6) { toast('🍋 Need 1,000,000 total lemons first!'); return; }
-  if (!confirm('Prestige reset: lose everything but gain a permanent ×1.5 multiplier?')) return;
-  state.prestige++;
-  const bonus = Math.pow(1.5, state.prestige);
-  state.lemons = 0;
-  state.total = 0;
-  state.clickPower = 1;
-  state.multiplier = bonus;
-  state.generators = {};
-  state.upgrades = {};
-  toast(`☢ Prestige ${state.prestige}! Multiplier: ×${bonus.toFixed(2)}`);
-  render();
-}
-
-let achievementsUnlocked = new Set();
-function checkAchievements() {
-  for (const ach of ACHIEVEMENTS) {
-    if (!achievementsUnlocked.has(ach.id) && ach.condition()) {
-      achievementsUnlocked.add(ach.id);
-      toast(`🏆 Achievement: ${ach.emoji} ${ach.name}`);
-      renderAchievements();
-    }
-  }
-}
-
-function render() {
+function renderAll() {
   renderUpgrades();
   renderGenerators();
   renderAchievements();
-  updateStats();
+  renderSkins();
+  updateHeader();
 }
 
-// ============================================================
+// =====================================================================
 // GAME LOOP
-// ============================================================
-document.getElementById('main-lemon').addEventListener('click', click);
+// =====================================================================
+let lastTick = performance.now();
+let lastRender = 0;
+let lastSave = 0;
+let autoClickTimer = 0;
 
-let lastTick = Date.now();
-function gameLoop() {
-  const now = Date.now();
-  const dt = (now - lastTick) / 1000;
+function gameLoop(now) {
+  const dt = Math.min((now - lastTick) / 1000, 0.5);
   lastTick = now;
 
   const lps = totalLPS();
   if (lps > 0) {
     const gain = lps * dt;
     state.lemons += gain;
-    state.total += gain;
+    state.totalLemons += gain;
   }
 
-  updateStats();
-  // Re-render sides every 500ms to avoid thrashing
+  // auto-click
+  if (state.autoClick) {
+    autoClickTimer += dt;
+    if (autoClickTimer >= 1) {
+      autoClickTimer -= 1;
+      const gain = effectiveClickPower();
+      state.lemons += gain;
+      state.totalLemons += gain;
+    }
+  }
+
+  updateHeader();
+
+  // slow renders
+  if (now - lastRender > 600) {
+    lastRender = now;
+    renderUpgrades();
+    renderGenerators();
+    checkAchievements();
+    renderSkins();
+  }
+
+  // auto-save every 15s
+  if (now - lastSave > 15000) {
+    lastSave = now;
+    saveGame();
+  }
+
   requestAnimationFrame(gameLoop);
 }
 
-// Slow re-render for sidebars
-setInterval(() => {
-  renderUpgrades();
-  renderGenerators();
-  checkAchievements();
-}, 500);
-
-// ============================================================
+// =====================================================================
 // INIT
-// ============================================================
-render();
-gameLoop();
+// =====================================================================
+document.getElementById('main-lemon').addEventListener('click', handleClick);
+
+loadGame();
+renderAll();
+requestAnimationFrame(t=>{ lastTick = t; gameLoop(t); });
+
+// save on tab close
+window.addEventListener('beforeunload', saveGame);
+window.addEventListener('visibilitychange', ()=>{ if(document.hidden) saveGame(); });
 </script>
 </body>
 </html>
