@@ -3,700 +3,867 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Open Case</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<title>🍋 Lemon Empire</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0d;
+    --surface: #141414;
+    --surface2: #1c1c1c;
+    --surface3: #242424;
+    --border: #2a2a2a;
+    --lemon: #f5d000;
+    --lemon-dim: #b89d00;
+    --lemon-glow: rgba(245, 208, 0, 0.18);
+    --lemon-glow-soft: rgba(245, 208, 0, 0.07);
+    --acid: #c8ff00;
+    --text: #e8e8e8;
+    --text-dim: #666;
+    --text-muted: #3a3a3a;
+    --danger: #ff4444;
+  }
 
-:root {
-  --gold: #e4bc5a;
-  --red: #eb4b4b;
-  --pink: #d32ce6;
-  --purple: #8847ff;
-  --blue: #4b69ff;
-  --teal: #5e98d9;
-  --gray: #b0c3d9;
-  --bg: #0d0f14;
-  --surface: #161a24;
-  --surface2: #1c2130;
-  --border: #252c3d;
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body {
-  height: 100%;
-  background: var(--bg);
-  overflow: hidden;
-  font-family: 'Barlow Condensed', sans-serif;
-}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
 
-/* ── Landing ── */
-#landing {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg);
-  z-index: 1;
-  transition: opacity 0.4s, pointer-events 0s 0.4s;
-}
-#landing.hidden { opacity: 0; pointer-events: none; }
+  /* Subtle noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.6;
+  }
 
-#landing::before {
-  content: '';
-  position: absolute;
-  width: 600px; height: 600px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(228,188,90,0.06) 0%, transparent 70%);
-  pointer-events: none;
-}
+  /* === LAYOUT === */
+  .app {
+    display: grid;
+    grid-template-columns: 280px 1fr 260px;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 0;
+  }
 
-.big-btn {
-  position: relative;
-  width: 220px; height: 220px;
-  border-radius: 50%;
-  border: none; cursor: pointer;
-  background: none; outline: none;
-  -webkit-tap-highlight-color: transparent;
-}
-.big-btn::before {
-  content: '';
-  position: absolute; inset: -3px;
-  border-radius: 50%;
-  background: conic-gradient(var(--gold), #c9a44e, var(--gold), #8a6b28, var(--gold));
-  opacity: 0.7;
-  animation: spin-ring 8s linear infinite;
-}
-.big-btn::after {
-  content: '';
-  position: absolute; inset: 2px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 38% 35%, #2a2310, #0d0f14);
-  border: 1px solid rgba(228,188,90,0.15);
-}
-@keyframes spin-ring { to { transform: rotate(360deg); } }
+  /* === HEADER === */
+  header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
 
-.btn-inner {
-  position: absolute; inset: 2px;
-  border-radius: 50%; z-index: 1;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 6px; transition: transform 0.15s;
-}
-.big-btn:hover .btn-inner { transform: scale(1.04); }
-.big-btn:active .btn-inner { transform: scale(0.96); }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.1em;
+    color: var(--lemon);
+    text-shadow: 0 0 30px var(--lemon-glow);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-.btn-icon { font-size: 52px; line-height: 1; filter: drop-shadow(0 0 12px rgba(228,188,90,0.5)); }
-.btn-label {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 15px; font-weight: 700;
-  letter-spacing: 5px; text-transform: uppercase;
-  color: var(--gold); opacity: 0.9;
-}
+  .logo span { font-size: 1.6rem; }
 
-.pulse-ring {
-  position: absolute; inset: -30px;
-  border-radius: 50%;
-  border: 1px solid rgba(228,188,90,0.15);
-  animation: pulse 3s ease-out infinite;
-}
-.pulse-ring:nth-child(2) { inset: -60px; animation-delay: 1s; }
-.pulse-ring:nth-child(3) { inset: -90px; animation-delay: 2s; }
-@keyframes pulse {
-  0% { opacity: 0.6; transform: scale(0.95); }
-  100% { opacity: 0; transform: scale(1.05); }
-}
+  .header-stats {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
 
-/* ── Overlay ── */
-#overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.96);
-  z-index: 10;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 32px;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.35s;
-}
-#overlay.show { opacity: 1; pointer-events: all; }
+  .stat-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+  }
 
-.close-btn {
-  position: absolute; top: 24px; right: 28px;
-  background: none; border: 1px solid var(--border); border-radius: 4px;
-  color: #5a6478;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 13px; letter-spacing: 3px; text-transform: uppercase;
-  padding: 8px 16px; cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
-}
-.close-btn:hover { color: #fff; border-color: #fff; }
+  .stat-pill .label {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
 
-/* ── Spinner ── */
-.spinner-wrapper { width: min(860px, 92vw); position: relative; }
+  .stat-pill .value {
+    font-size: 0.95rem;
+    color: var(--lemon);
+    font-weight: 500;
+  }
 
-.spinner-track {
-  overflow: hidden;
-  border: 1.5px solid var(--border); border-radius: 6px;
-  background: var(--surface);
-  position: relative; height: 148px;
-}
-.spinner-track::before, .spinner-track::after {
-  content: '';
-  position: absolute; top: 0; bottom: 0;
-  width: 140px; z-index: 10; pointer-events: none;
-}
-.spinner-track::before { left: 0; background: linear-gradient(to right, var(--surface), transparent); }
-.spinner-track::after  { right: 0; background: linear-gradient(to left, var(--surface), transparent); }
+  /* === SIDEBAR LEFT (upgrades) === */
+  .sidebar-left {
+    border-right: 1px solid var(--border);
+    padding: 20px 16px;
+    overflow-y: auto;
+    background: var(--surface);
+    max-height: calc(100vh - 65px);
+    position: sticky;
+    top: 65px;
+  }
 
-.spinner-needle {
-  position: absolute; top: 0; bottom: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 2px; background: var(--gold);
-  z-index: 20; pointer-events: none;
-}
-.spinner-needle::before, .spinner-needle::after {
-  content: ''; position: absolute; left: 50%;
-  transform: translateX(-50%);
-  border-left: 7px solid transparent; border-right: 7px solid transparent;
-}
-.spinner-needle::before { top: 0; border-top: 10px solid var(--gold); }
-.spinner-needle::after  { bottom: 0; border-bottom: 10px solid var(--gold); }
+  .section-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
 
-.spinner-strip {
-  display: flex; align-items: center;
-  height: 100%; gap: 4px; padding: 0 4px;
-  will-change: transform;
-}
+  /* === CENTER === */
+  .center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 28px;
+    position: relative;
+  }
 
-.item-card {
-  flex-shrink: 0; width: 120px; height: 120px;
-  border-radius: 6px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: flex-end;
-  padding: 10px 8px 8px;
-  position: relative; overflow: hidden;
-  border: 2px solid transparent;
-  background: var(--surface2);
-}
-.item-card .item-icon {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -62%);
-  font-size: 38px; opacity: 0.9;
-}
-.item-card .item-name {
-  font-size: 10px; font-weight: 500; letter-spacing: 1px;
-  text-align: center; text-transform: uppercase; color: #fff;
-  line-height: 1.2; position: relative; z-index: 1;
-}
-.item-card .item-rarity {
-  font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
-  margin-top: 2px; font-weight: 600; position: relative; z-index: 1;
-}
-.item-card .shine {
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 60%);
-  pointer-events: none;
-}
+  /* Lemon counter display */
+  .lemon-count-display {
+    text-align: center;
+  }
 
-.r-consumer   { border-color: var(--gray);   } .r-consumer   .item-rarity { color: var(--gray);   }
-.r-industrial { border-color: var(--teal);   } .r-industrial .item-rarity { color: var(--teal);   }
-.r-milspec    { border-color: var(--blue);   } .r-milspec    .item-rarity { color: var(--blue);   }
-.r-restricted { border-color: var(--purple); } .r-restricted .item-rarity { color: var(--purple); }
-.r-classified { border-color: var(--pink);   } .r-classified .item-rarity { color: var(--pink);   }
-.r-covert     { border-color: var(--red);    } .r-covert     .item-rarity { color: var(--red);    }
-.r-gold       { border-color: var(--gold);   } .r-gold       .item-rarity { color: var(--gold);   }
+  .lemon-count-display .big-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4.5rem;
+    color: var(--lemon);
+    line-height: 1;
+    text-shadow: 0 0 60px rgba(245,208,0,0.3);
+    letter-spacing: 0.04em;
+  }
 
-/* ── Drop Chances Table ── */
-.chances-table {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-  max-width: min(860px, 92vw);
-}
+  .lemon-count-display .sub {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
 
-.chance-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 6px 12px;
-}
+  /* Main clicker lemon */
+  .clicker-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.chance-dot {
-  width: 7px; height: 7px;
-  border-radius: 2px; flex-shrink: 0;
-}
+  .glow-ring {
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245,208,0,0.1) 0%, transparent 70%);
+    animation: pulse-ring 2.5s ease-in-out infinite;
+    pointer-events: none;
+  }
 
-.chance-name {
-  font-size: 11px; letter-spacing: 1.5px;
-  text-transform: uppercase; color: #6b7a94;
-  font-weight: 500;
-}
+  @keyframes pulse-ring {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.12); opacity: 1; }
+  }
 
-.chance-pct {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 14px; font-weight: 700;
-  letter-spacing: 1px;
-  margin-left: 4px;
-}
+  .main-lemon {
+    font-size: 7rem;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.08s ease, filter 0.08s ease;
+    filter: drop-shadow(0 0 20px rgba(245,208,0,0.4));
+    position: relative;
+    z-index: 2;
+    animation: float 3s ease-in-out infinite;
+  }
 
-/* ── Inventory Panel ── */
-#inv-panel {
-  position: fixed; inset: 0; z-index: 40;
-  background: var(--bg);
-  display: flex; flex-direction: column;
-  align-items: center;
-  padding: 48px 24px 40px;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.3s;
-  overflow-y: auto;
-}
-#inv-panel.show { opacity: 1; pointer-events: all; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
 
-.inv-header {
-  display: flex; align-items: center;
-  justify-content: space-between;
-  width: min(800px, 100%);
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
+  .main-lemon:active {
+    transform: scale(0.88) translateY(2px) !important;
+    filter: drop-shadow(0 0 40px rgba(245,208,0,0.8));
+    animation-play-state: paused;
+  }
 
-.inv-title {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 28px; font-weight: 700;
-  letter-spacing: 5px; text-transform: uppercase; color: #fff;
-}
-.inv-count {
-  font-size: 13px; letter-spacing: 2px;
-  text-transform: uppercase; color: #4a5568; margin-top: 2px;
-}
+  .main-lemon:hover {
+    filter: drop-shadow(0 0 30px rgba(245,208,0,0.6));
+  }
 
-.btn-back {
-  padding: 10px 22px;
-  background: transparent;
-  border: 1px solid var(--border); border-radius: 4px;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 14px; font-weight: 700; letter-spacing: 2px;
-  text-transform: uppercase; color: #4a5568;
-  cursor: pointer; transition: color 0.2s, border-color 0.2s;
-}
-.btn-back:hover { color: #fff; border-color: #fff; }
+  /* Click particles */
+  .particle {
+    position: fixed;
+    pointer-events: none;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--lemon);
+    text-shadow: 0 0 8px var(--lemon);
+    font-family: 'DM Mono', monospace;
+    z-index: 500;
+    animation: fly-up 0.9s ease-out forwards;
+  }
 
-/* ── Search Bar ── */
-.inv-search-wrap {
-  width: min(800px, 100%);
-  margin-bottom: 20px;
-  position: relative;
-}
+  @keyframes fly-up {
+    0%   { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-80px) scale(0.6); }
+  }
 
-.inv-search {
-  width: 100%;
-  padding: 11px 16px 11px 40px;
-  background: var(--surface2);
-  border: 1px solid var(--border); border-radius: 4px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 14px; letter-spacing: 1.5px;
-  text-transform: uppercase; color: #fff;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.inv-search::placeholder { color: #3a4560; }
-.inv-search:focus { border-color: rgba(228,188,90,0.4); }
+  /* Rate info */
+  .rate-bar {
+    display: flex;
+    gap: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 24px;
+  }
 
-.search-icon {
-  position: absolute; left: 13px; top: 50%;
-  transform: translateY(-50%);
-  font-size: 15px; opacity: 0.35;
-  pointer-events: none;
-}
+  .rate-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
 
-/* ── Rarity filter pills ── */
-.rarity-filters {
-  width: min(800px, 100%);
-  display: flex; gap: 8px; flex-wrap: wrap;
-  margin-bottom: 20px;
-}
+  .rate-item .r-label {
+    font-size: 0.58rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
 
-.filter-pill {
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: transparent;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 11px; letter-spacing: 1.5px;
-  text-transform: uppercase; color: #4a5568;
-  cursor: pointer; transition: all 0.2s;
-}
-.filter-pill:hover { color: #fff; border-color: #fff; }
-.filter-pill.active {
-  color: #0d0f14;
-  border-color: transparent;
-}
+  .rate-item .r-val {
+    font-size: 0.88rem;
+    color: var(--acid);
+  }
 
-.inv-grid {
-  display: flex; flex-wrap: wrap;
-  gap: 10px;
-  width: min(800px, 100%);
-  justify-content: flex-start;
-}
+  /* === GENERATORS (right sidebar) === */
+  .sidebar-right {
+    border-left: 1px solid var(--border);
+    padding: 20px 16px;
+    overflow-y: auto;
+    background: var(--surface);
+    max-height: calc(100vh - 65px);
+    position: sticky;
+    top: 65px;
+  }
 
-.inv-item {
-  width: 110px; height: 110px;
-  border-radius: 6px; background: var(--surface2);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: flex-end;
-  padding: 8px 6px 8px;
-  border: 1.5px solid;
-  position: relative; overflow: hidden;
-  cursor: default;
-  transition: transform 0.15s;
-}
-.inv-item:hover { transform: scale(1.04); }
+  /* === UPGRADE CARDS === */
+  .upgrade-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    overflow: hidden;
+  }
 
-.inv-item .inv-emoji {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -65%); font-size: 34px;
-}
-.inv-item .inv-name {
-  font-size: 9px; letter-spacing: 0.8px;
-  text-transform: uppercase; text-align: center;
-  font-weight: 500; color: #fff;
-  line-height: 1.2; position: relative; z-index: 1;
-}
+  .upgrade-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, var(--lemon-glow-soft), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
 
-.inv-no-results {
-  color: #2a3040; font-size: 14px; letter-spacing: 3px;
-  text-transform: uppercase; margin-top: 60px; width: 100%;
-  text-align: center;
-}
+  .upgrade-card:hover::before { opacity: 1; }
 
-.inv-btn-landing {
-  position: fixed; bottom: 32px; right: 32px;
-  padding: 10px 20px;
-  background: transparent;
-  border: 1px solid var(--border); border-radius: 4px;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 13px; font-weight: 700; letter-spacing: 2px;
-  text-transform: uppercase; color: #4a5568;
-  cursor: pointer; transition: color 0.2s, border-color 0.2s; z-index: 2;
-}
-.inv-btn-landing:hover { color: #fff; border-color: #fff; }
+  .upgrade-card:hover {
+    border-color: var(--lemon-dim);
+    transform: translateX(2px);
+  }
+
+  .upgrade-card.affordable {
+    border-color: rgba(245,208,0,0.3);
+  }
+
+  .upgrade-card.affordable:hover {
+    border-color: var(--lemon);
+    box-shadow: 0 0 12px var(--lemon-glow);
+  }
+
+  .upgrade-card.maxed {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .upgrade-card.maxed:hover { transform: none; }
+
+  .upgrade-icon { font-size: 1.5rem; flex-shrink: 0; }
+
+  .upgrade-info { flex: 1; min-width: 0; }
+
+  .upgrade-name {
+    font-size: 0.78rem;
+    color: var(--text);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .upgrade-desc {
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    margin-top: 1px;
+  }
+
+  .upgrade-cost {
+    font-size: 0.75rem;
+    color: var(--lemon);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .upgrade-cost.cant-afford { color: var(--text-dim); }
+
+  /* === GENERATOR CARDS === */
+  .gen-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gen-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: var(--lemon);
+    width: var(--progress, 0%);
+    transition: width 0.3s ease;
+  }
+
+  .gen-card:hover {
+    border-color: var(--lemon-dim);
+  }
+
+  .gen-card.affordable {
+    border-color: rgba(245,208,0,0.3);
+  }
+
+  .gen-card.affordable:hover {
+    border-color: var(--lemon);
+    box-shadow: 0 0 16px var(--lemon-glow);
+  }
+
+  .gen-emoji { font-size: 1.8rem; }
+
+  .gen-info .gen-name {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .gen-info .gen-rate {
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    margin-top: 1px;
+  }
+
+  .gen-right { text-align: right; }
+
+  .gen-count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    color: var(--lemon);
+    line-height: 1;
+  }
+
+  .gen-cost {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .gen-cost.affordable-cost { color: var(--lemon-dim); }
+
+  /* === MILESTONES / ACHIEVEMENTS === */
+  .achievements-strip {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 420px;
+  }
+
+  .achievement {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+  }
+
+  .achievement.unlocked {
+    border-color: var(--lemon-dim);
+    color: var(--lemon);
+    background: rgba(245,208,0,0.05);
+  }
+
+  /* === TOAST NOTIFICATIONS === */
+  #toasts {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .toast {
+    background: var(--surface3);
+    border: 1px solid var(--lemon-dim);
+    color: var(--lemon);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    animation: toast-in 0.3s ease, toast-out 0.3s ease 2.2s forwards;
+    box-shadow: 0 0 20px var(--lemon-glow);
+    white-space: nowrap;
+  }
+
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes toast-out {
+    from { opacity: 1; }
+    to   { opacity: 0; transform: translateY(-6px); }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* === PRESTIGE === */
+  .prestige-btn {
+    background: transparent;
+    border: 1px solid #333;
+    color: var(--text-dim);
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+  }
+
+  .prestige-btn:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+
+  .prestige-btn.ready {
+    border-color: var(--danger);
+    color: var(--danger);
+    animation: danger-pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes danger-pulse {
+    0%, 100% { box-shadow: none; }
+    50% { box-shadow: 0 0 16px rgba(255,68,68,0.3); }
+  }
 </style>
 </head>
 <body>
 
-<!-- Landing -->
-<div id="landing">
-  <div class="pulse-ring"></div>
-  <div class="pulse-ring"></div>
-  <div class="pulse-ring"></div>
-  <button class="big-btn" onclick="openOverlay()" aria-label="Open case">
-    <div class="btn-inner">
-      <div class="btn-icon">📦</div>
-      <div class="btn-label">Open</div>
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo"><span>🍋</span> LEMON EMPIRE</div>
+    <div class="header-stats">
+      <div class="stat-pill">
+        <span class="label">Total Squeezed</span>
+        <span class="value" id="total-lemons">0</span>
+      </div>
+      <div class="stat-pill">
+        <span class="label">Per Second</span>
+        <span class="value" id="header-lps">0/s</span>
+      </div>
+      <div class="stat-pill">
+        <span class="label">Prestige</span>
+        <span class="value" id="prestige-count">×1</span>
+      </div>
     </div>
-  </button>
-  <button class="inv-btn-landing" onclick="showInventory()">Inventory</button>
+  </header>
+
+  <!-- LEFT: UPGRADES -->
+  <div class="sidebar-left">
+    <div class="section-title">⚡ Upgrades</div>
+    <div id="upgrades-list"></div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="center">
+    <div class="lemon-count-display">
+      <div class="big-number" id="lemon-count">0</div>
+      <div class="sub">🍋 Lemons in stock</div>
+    </div>
+
+    <div class="clicker-wrap">
+      <div class="glow-ring"></div>
+      <div class="main-lemon" id="main-lemon" title="Click to squeeze!">🍋</div>
+    </div>
+
+    <div class="rate-bar">
+      <div class="rate-item">
+        <span class="r-label">Per Click</span>
+        <span class="r-val" id="per-click">1</span>
+      </div>
+      <div class="rate-item">
+        <span class="r-label">Per Second</span>
+        <span class="r-val" id="per-sec">0</span>
+      </div>
+      <div class="rate-item">
+        <span class="r-label">Multiplier</span>
+        <span class="r-val" id="multiplier">×1</span>
+      </div>
+    </div>
+
+    <div class="achievements-strip" id="achievements"></div>
+
+    <button class="prestige-btn" id="prestige-btn" onclick="prestige()">☢ Prestige Reset</button>
+  </div>
+
+  <!-- RIGHT: GENERATORS -->
+  <div class="sidebar-right">
+    <div class="section-title">🏭 Generators</div>
+    <div id="generators-list"></div>
+  </div>
+
 </div>
 
-<!-- Inventory panel -->
-<div id="inv-panel">
-  <div class="inv-header">
-    <div>
-      <div class="inv-title">Inventory</div>
-      <div class="inv-count" id="invCount">0 items</div>
-    </div>
-    <button class="btn-back" onclick="hideInventory()">← Back</button>
-  </div>
-
-  <!-- Search -->
-  <div class="inv-search-wrap">
-    <span class="search-icon">🔍</span>
-    <input
-      class="inv-search"
-      id="invSearch"
-      type="text"
-      placeholder="Search items..."
-      oninput="renderInventory()"
-      autocomplete="off"
-    />
-  </div>
-
-  <!-- Rarity filter pills -->
-  <div class="rarity-filters" id="rarityFilters"></div>
-
-  <div class="inv-grid" id="invGrid">
-    <div class="inv-no-results" id="invEmpty">Nothing here yet</div>
-  </div>
-</div>
-
-<!-- Spin overlay -->
-<div id="overlay">
-  <div class="spinner-wrapper">
-    <div class="spinner-track" id="spinnerTrack">
-      <div class="spinner-needle"></div>
-      <div class="spinner-strip" id="strip"></div>
-    </div>
-  </div>
-
-  <!-- Drop chances instead of rarity names -->
-  <div class="chances-table" id="chancesTable"></div>
-</div>
+<div id="toasts"></div>
 
 <script>
-const ITEMS = [
-  { name: 'Shadow Pistol',  rarity: 'consumer',      cls: 'r-consumer',   emoji: '🔫', prob: 0.40 },
-  { name: 'Iron Dagger',    rarity: 'consumer',      cls: 'r-consumer',   emoji: '🗡️', prob: 0.40 },
-  { name: 'Neon Buster',    rarity: 'industrial',    cls: 'r-industrial', emoji: '🔧', prob: 0.32 },
-  { name: 'Cold Steel',     rarity: 'industrial',    cls: 'r-industrial', emoji: '⚙️', prob: 0.32 },
-  { name: 'Arc Rifle',      rarity: 'mil-spec',      cls: 'r-milspec',    emoji: '🔩', prob: 0.18 },
-  { name: 'Storm Blade',    rarity: 'mil-spec',      cls: 'r-milspec',    emoji: '⚡', prob: 0.18 },
-  { name: 'Phantom Edge',   rarity: 'restricted',    cls: 'r-restricted', emoji: '🌀', prob: 0.08 },
-  { name: 'Void Runner',    rarity: 'restricted',    cls: 'r-restricted', emoji: '💜', prob: 0.08 },
-  { name: 'Dragon Tooth',   rarity: 'classified',    cls: 'r-classified', emoji: '🔮', prob: 0.032 },
-  { name: 'Neon Serpent',   rarity: 'classified',    cls: 'r-classified', emoji: '🌸', prob: 0.032 },
-  { name: 'Blood Contract', rarity: 'covert',        cls: 'r-covert',     emoji: '🔥', prob: 0.0064 },
-  { name: 'Death Whisper',  rarity: 'covert',        cls: 'r-covert',     emoji: '💀', prob: 0.0064 },
-  { name: '★ Golden Wrath', rarity: 'extraordinary', cls: 'r-gold',       emoji: '⭐', prob: 0.0026 },
+// ============================================================
+// GAME STATE
+// ============================================================
+let state = {
+  lemons: 0,
+  total: 0,
+  clickPower: 1,
+  multiplier: 1,
+  prestige: 0,
+  generators: {},
+  upgrades: {}
+};
+
+// ============================================================
+// DATA
+// ============================================================
+const GENERATORS = [
+  { id: 'hand',      name: 'Hand Squeezer',    emoji: '✋', base: 15,   lps: 0.1,  desc: 'A tired hand doing its best.' },
+  { id: 'juicer',    name: 'Juicer',            emoji: '🫙', base: 100,  lps: 0.5,  desc: 'Basic but reliable citrus press.' },
+  { id: 'grove',     name: 'Lemon Grove',       emoji: '🌳', base: 500,  lps: 2,    desc: 'Your own slice of sunshine.' },
+  { id: 'factory',   name: 'Lemon Factory',     emoji: '🏭', base: 2500, lps: 10,   desc: 'Industrial-grade sour power.' },
+  { id: 'lab',       name: 'Citrus Lab',        emoji: '🔬', base: 10000,lps: 40,   desc: 'Science, but make it tart.' },
+  { id: 'planet',    name: 'Lemon Planet',      emoji: '🪐', base: 50000,lps: 200,  desc: 'An entire world of lemons.' },
+  { id: 'dimension', name: 'Citrus Dimension',  emoji: '🌀', base: 250000,lps:1000, desc: 'Beyond space. Beyond sour.' },
 ];
 
-const RARITY_COLOR = {
-  consumer: 'var(--gray)', industrial: 'var(--teal)', 'mil-spec': 'var(--blue)',
-  restricted: 'var(--purple)', classified: 'var(--pink)', covert: 'var(--red)',
-  extraordinary: 'var(--gold)'
-};
+const UPGRADES = [
+  { id: 'strong_hands',  name: 'Strong Hands',     emoji: '💪', cost: 50,     effect: () => { state.clickPower += 1; },    desc: '+1 per click',          maxBuy: 1 },
+  { id: 'iron_grip',     name: 'Iron Grip',         emoji: '🦾', cost: 200,    effect: () => { state.clickPower += 5; },    desc: '+5 per click',          maxBuy: 1 },
+  { id: 'double_squeeze',name: 'Double Squeeze',    emoji: '🍋', cost: 500,    effect: () => { state.multiplier *= 2; },    desc: '×2 all production',     maxBuy: 1 },
+  { id: 'lemon_cult',    name: 'Lemon Cult',        emoji: '🙏', cost: 2000,   effect: () => { state.multiplier *= 2; },    desc: '×2 all production',     maxBuy: 1 },
+  { id: 'zest_mode',     name: 'Zest Mode',         emoji: '⚡', cost: 5000,   effect: () => { state.clickPower += 20; },   desc: '+20 per click',         maxBuy: 1 },
+  { id: 'golden_lemon',  name: 'Golden Lemon',      emoji: '✨', cost: 20000,  effect: () => { state.multiplier *= 3; },    desc: '×3 all production',     maxBuy: 1 },
+  { id: 'sour_reactor',  name: 'Sour Reactor',      emoji: '☢️', cost: 100000, effect: () => { state.multiplier *= 5; },    desc: '×5 all production',     maxBuy: 1 },
+  { id: 'mega_click',    name: 'Mega Click',        emoji: '👊', cost: 50000,  effect: () => { state.clickPower += 100; },  desc: '+100 per click',        maxBuy: 1 },
+];
 
-const RARITY_HEX = {
-  consumer: '#b0c3d9', industrial: '#5e98d9', 'mil-spec': '#4b69ff',
-  restricted: '#8847ff', classified: '#d32ce6', covert: '#eb4b4b',
-  extraordinary: '#e4bc5a'
-};
+const ACHIEVEMENTS = [
+  { id: 'first',    name: 'First Drop',      emoji: '🍋', condition: () => state.total >= 1 },
+  { id: 'hundred',  name: 'Century',         emoji: '💯', condition: () => state.total >= 100 },
+  { id: 'thousand', name: 'Kilo Lemon',      emoji: '🏆', condition: () => state.total >= 1000 },
+  { id: 'million',  name: 'Millionaire',     emoji: '💰', condition: () => state.total >= 1e6 },
+  { id: 'billion',  name: 'Lemon Tycoon',    emoji: '🌟', condition: () => state.total >= 1e9 },
+  { id: 'prestige', name: 'Prestige Baron',  emoji: '☢', condition: () => state.prestige >= 1 },
+  { id: 'maxgen',   name: 'Full Factory',    emoji: '🏭', condition: () => Object.values(state.generators).some(v => v >= 10) },
+];
 
-// Compute total probability weight
-const TOTAL_PROB = ITEMS.reduce((s, i) => s + i.prob, 0);
-
-// Build drop chances per rarity (sum probs per rarity / total * 100)
-const RARITY_ORDER = ['consumer','industrial','mil-spec','restricted','classified','covert','extraordinary'];
-const RARITY_LABEL = {
-  consumer: 'Consumer', industrial: 'Industrial', 'mil-spec': 'Mil-Spec',
-  restricted: 'Restricted', classified: 'Classified', covert: 'Covert',
-  extraordinary: 'Extraordinary'
-};
-
-function getRarityChance(rarity) {
-  const sum = ITEMS.filter(i => i.rarity === rarity).reduce((s, i) => s + i.prob, 0);
-  return (sum / TOTAL_PROB * 100);
+// ============================================================
+// HELPERS
+// ============================================================
+function fmt(n) {
+  if (n >= 1e12) return (n/1e12).toFixed(2) + 'T';
+  if (n >= 1e9)  return (n/1e9).toFixed(2) + 'B';
+  if (n >= 1e6)  return (n/1e6).toFixed(2) + 'M';
+  if (n >= 1e3)  return (n/1e3).toFixed(1) + 'K';
+  return Math.floor(n).toString();
 }
 
-function formatChance(pct) {
-  if (pct >= 1) return pct.toFixed(1) + '%';
-  if (pct >= 0.1) return pct.toFixed(2) + '%';
-  return pct.toFixed(3) + '%';
+function genCount(id) { return state.generators[id] || 0; }
+
+function genCost(gen) {
+  return Math.floor(gen.base * Math.pow(1.15, genCount(gen.id)));
 }
 
-// Build chances table
-function buildChancesTable() {
-  const table = document.getElementById('chancesTable');
-  table.innerHTML = '';
-  RARITY_ORDER.forEach(rarity => {
-    const pct = getRarityChance(rarity);
-    const hex = RARITY_HEX[rarity];
-    const row = document.createElement('div');
-    row.className = 'chance-row';
-    row.innerHTML = `
-      <div class="chance-dot" style="background:${hex}"></div>
-      <span class="chance-name">${RARITY_LABEL[rarity]}</span>
-      <span class="chance-pct" style="color:${hex}">${formatChance(pct)}</span>
+function totalLPS() {
+  let lps = 0;
+  for (const gen of GENERATORS) {
+    lps += genCount(gen.id) * gen.lps;
+  }
+  return lps * state.multiplier;
+}
+
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderUpgrades() {
+  const list = document.getElementById('upgrades-list');
+  list.innerHTML = '';
+  for (const up of UPGRADES) {
+    const bought = state.upgrades[up.id];
+    const affordable = state.lemons >= up.cost;
+    const card = document.createElement('div');
+    card.className = 'upgrade-card' + (bought ? ' maxed' : (affordable ? ' affordable' : ''));
+    card.innerHTML = `
+      <span class="upgrade-icon">${up.emoji}</span>
+      <div class="upgrade-info">
+        <div class="upgrade-name">${up.name}</div>
+        <div class="upgrade-desc">${bought ? '✓ Purchased' : up.desc}</div>
+      </div>
+      <div class="upgrade-cost ${!affordable && !bought ? 'cant-afford' : ''}">
+        ${bought ? '✓' : '🍋' + fmt(up.cost)}
+      </div>
     `;
-    table.appendChild(row);
-  });
+    if (!bought) card.onclick = () => buyUpgrade(up.id);
+    list.appendChild(card);
+  }
 }
 
-// Build rarity filter pills
-function buildRarityFilters() {
-  const container = document.getElementById('rarityFilters');
-  container.innerHTML = '';
-
-  // "All" pill
-  const all = document.createElement('button');
-  all.className = 'filter-pill active';
-  all.dataset.rarity = 'all';
-  all.style.backgroundColor = 'rgba(228,188,90,0.85)';
-  all.textContent = 'All';
-  all.onclick = () => setRarityFilter('all');
-  container.appendChild(all);
-
-  // One pill per rarity present in inventory
-  const presentRarities = [...new Set(inventory.map(i => i.rarity))];
-  RARITY_ORDER.filter(r => presentRarities.includes(r)).forEach(rarity => {
-    const pill = document.createElement('button');
-    pill.className = 'filter-pill';
-    pill.dataset.rarity = rarity;
-    pill.textContent = RARITY_LABEL[rarity];
-    pill.onclick = () => setRarityFilter(rarity);
-    container.appendChild(pill);
-  });
+function renderGenerators() {
+  const list = document.getElementById('generators-list');
+  list.innerHTML = '';
+  for (const gen of GENERATORS) {
+    const cost = genCost(gen);
+    const count = genCount(gen.id);
+    const affordable = state.lemons >= cost;
+    const card = document.createElement('div');
+    card.className = 'gen-card' + (affordable ? ' affordable' : '');
+    const progress = Math.min(100, (state.lemons / cost) * 100);
+    card.style.setProperty('--progress', progress + '%');
+    card.innerHTML = `
+      <span class="gen-emoji">${gen.emoji}</span>
+      <div class="gen-info">
+        <div class="gen-name">${gen.name}</div>
+        <div class="gen-rate">${gen.lps}/s each • ${gen.desc}</div>
+      </div>
+      <div class="gen-right">
+        <div class="gen-count">${count}</div>
+        <div class="gen-cost ${affordable ? 'affordable-cost' : ''}">🍋${fmt(cost)}</div>
+      </div>
+    `;
+    card.onclick = () => buyGenerator(gen.id);
+    list.appendChild(card);
+  }
 }
 
-let activeRarityFilter = 'all';
+function renderAchievements() {
+  const el = document.getElementById('achievements');
+  el.innerHTML = '';
+  for (const ach of ACHIEVEMENTS) {
+    const unlocked = ach.condition();
+    const div = document.createElement('div');
+    div.className = 'achievement' + (unlocked ? ' unlocked' : '');
+    div.innerHTML = `${ach.emoji} ${ach.name}`;
+    el.appendChild(div);
+  }
+}
 
-function setRarityFilter(rarity) {
-  activeRarityFilter = rarity;
-  document.querySelectorAll('.filter-pill').forEach(pill => {
-    const isActive = pill.dataset.rarity === rarity;
-    pill.classList.toggle('active', isActive);
-    if (isActive) {
-      const hex = rarity === 'all' ? 'rgba(228,188,90,0.85)' : RARITY_HEX[rarity] + 'cc';
-      pill.style.backgroundColor = hex;
-      pill.style.color = rarity === 'all' ? '#1a1200' : '#fff';
-    } else {
-      pill.style.backgroundColor = '';
-      pill.style.color = '';
+function updateStats() {
+  const lps = totalLPS();
+  document.getElementById('lemon-count').textContent = fmt(state.lemons);
+  document.getElementById('total-lemons').textContent = fmt(state.total);
+  document.getElementById('header-lps').textContent = fmt(lps) + '/s';
+  document.getElementById('per-click').textContent = fmt(state.clickPower * state.multiplier);
+  document.getElementById('per-sec').textContent = fmt(lps);
+  document.getElementById('multiplier').textContent = '×' + state.multiplier.toFixed(1);
+  document.getElementById('prestige-count').textContent = '×' + (state.prestige + 1);
+
+  const prestigeBtn = document.getElementById('prestige-btn');
+  if (state.total >= 1e6) {
+    prestigeBtn.classList.add('ready');
+    prestigeBtn.textContent = '☢ Prestige Reset (Ready!)';
+  } else {
+    prestigeBtn.classList.remove('ready');
+    prestigeBtn.textContent = '☢ Prestige (Need 1M total)';
+  }
+}
+
+// ============================================================
+// ACTIONS
+// ============================================================
+function click(e) {
+  const gain = Math.floor(state.clickPower * state.multiplier);
+  state.lemons += gain;
+  state.total += gain;
+
+  // particle
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.textContent = '+' + fmt(gain) + ' 🍋';
+  p.style.left = (e.clientX - 30) + 'px';
+  p.style.top  = (e.clientY - 10) + 'px';
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), 900);
+
+  checkAchievements();
+}
+
+function buyGenerator(id) {
+  const gen = GENERATORS.find(g => g.id === id);
+  const cost = genCost(gen);
+  if (state.lemons < cost) return;
+  state.lemons -= cost;
+  state.generators[id] = genCount(id) + 1;
+  if (genCount(id) === 1) toast(`🏭 Built your first ${gen.name}!`);
+  render();
+}
+
+function buyUpgrade(id) {
+  const up = UPGRADES.find(u => u.id === id);
+  if (!up || state.upgrades[id] || state.lemons < up.cost) return;
+  state.lemons -= up.cost;
+  state.upgrades[id] = true;
+  up.effect();
+  toast(`⚡ Unlocked: ${up.name}`);
+  render();
+}
+
+function prestige() {
+  if (state.total < 1e6) { toast('🍋 Need 1,000,000 total lemons first!'); return; }
+  if (!confirm('Prestige reset: lose everything but gain a permanent ×1.5 multiplier?')) return;
+  state.prestige++;
+  const bonus = Math.pow(1.5, state.prestige);
+  state.lemons = 0;
+  state.total = 0;
+  state.clickPower = 1;
+  state.multiplier = bonus;
+  state.generators = {};
+  state.upgrades = {};
+  toast(`☢ Prestige ${state.prestige}! Multiplier: ×${bonus.toFixed(2)}`);
+  render();
+}
+
+let achievementsUnlocked = new Set();
+function checkAchievements() {
+  for (const ach of ACHIEVEMENTS) {
+    if (!achievementsUnlocked.has(ach.id) && ach.condition()) {
+      achievementsUnlocked.add(ach.id);
+      toast(`🏆 Achievement: ${ach.emoji} ${ach.name}`);
+      renderAchievements();
     }
-  });
-  renderInventory();
-}
-
-// Inventory
-let inventory = [];
-try { inventory = JSON.parse(localStorage.getItem('dropzone_inventory') || '[]'); } catch(e) {}
-
-function saveInventory() {
-  try { localStorage.setItem('dropzone_inventory', JSON.stringify(inventory)); } catch(e) {}
-}
-
-let spinning = false;
-let animFrame = null;
-
-function weightedRandom() {
-  let r = Math.random() * TOTAL_PROB;
-  for (const item of ITEMS) { r -= item.prob; if (r <= 0) return item; }
-  return ITEMS[0];
-}
-
-function makeCard(item) {
-  const d = document.createElement('div');
-  d.className = `item-card ${item.cls}`;
-  d.innerHTML = `<div class="shine"></div><div class="item-icon">${item.emoji}</div><div class="item-name">${item.name}</div><div class="item-rarity">${formatChance(getRarityChance(item.rarity))}</div>`;
-  return d;
-}
-
-function buildStrip(winnerIndex) {
-  const strip = document.getElementById('strip');
-  strip.innerHTML = '';
-  strip.style.transform = 'translateX(0px)';
-  const TOTAL = 80, WIN_POS = 66;
-  for (let i = 0; i < TOTAL; i++) {
-    strip.appendChild(makeCard(i === WIN_POS ? ITEMS[winnerIndex] : weightedRandom()));
   }
-  return WIN_POS;
 }
 
-function triggerOpen() {
-  if (spinning) return;
-  spinning = true;
-
-  const wonItem = weightedRandom();
-  const winnerIndex = ITEMS.indexOf(wonItem);
-  const winPos = buildStrip(winnerIndex);
-
-  const strip = document.getElementById('strip');
-  const CARD_W = 124;
-  const trackW = document.getElementById('spinnerTrack').offsetWidth;
-  const targetX = -(winPos * CARD_W - trackW / 2 + CARD_W / 2);
-
-  const duration = 6200;
-  const start = performance.now();
-  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
-
-  function animate(now) {
-    const t = Math.min((now - start) / duration, 1);
-    strip.style.transform = `translateX(${targetX * easeOut(t)}px)`;
-    if (t < 1) {
-      animFrame = requestAnimationFrame(animate);
-    } else {
-      spinning = false; animFrame = null;
-      inventory.unshift({ ...wonItem, id: Date.now() });
-      saveInventory();
-      setTimeout(closeOverlay, 600);
-    }
-  }
-  animFrame = requestAnimationFrame(animate);
+function render() {
+  renderUpgrades();
+  renderGenerators();
+  renderAchievements();
+  updateStats();
 }
 
-function openOverlay() {
-  document.getElementById('landing').classList.add('hidden');
-  document.getElementById('overlay').classList.add('show');
-  setTimeout(triggerOpen, 300);
-}
+// ============================================================
+// GAME LOOP
+// ============================================================
+document.getElementById('main-lemon').addEventListener('click', click);
 
-function closeOverlay() {
-  document.getElementById('overlay').classList.remove('show');
-  setTimeout(() => document.getElementById('landing').classList.remove('hidden'), 10);
-}
+let lastTick = Date.now();
+function gameLoop() {
+  const now = Date.now();
+  const dt = (now - lastTick) / 1000;
+  lastTick = now;
 
-function showInventory() {
-  activeRarityFilter = 'all';
-  document.getElementById('invSearch').value = '';
-  buildRarityFilters();
-  renderInventory();
-  document.getElementById('landing').classList.add('hidden');
-  document.getElementById('inv-panel').classList.add('show');
-}
-
-function hideInventory() {
-  document.getElementById('inv-panel').classList.remove('show');
-  setTimeout(() => document.getElementById('landing').classList.remove('hidden'), 10);
-}
-
-function renderInventory() {
-  const query = document.getElementById('invSearch').value.trim().toLowerCase();
-  const grid = document.getElementById('invGrid');
-  const empty = document.getElementById('invEmpty');
-
-  document.getElementById('invCount').textContent = `${inventory.length} item${inventory.length !== 1 ? 's' : ''}`;
-
-  // Rebuild pills in case new rarities appeared
-  buildRarityFilters();
-
-  // Filter
-  let filtered = inventory.filter(item => {
-    const matchSearch = !query || item.name.toLowerCase().includes(query) || item.rarity.toLowerCase().includes(query);
-    const matchRarity = activeRarityFilter === 'all' || item.rarity === activeRarityFilter;
-    return matchSearch && matchRarity;
-  });
-
-  grid.querySelectorAll('.inv-item').forEach(el => el.remove());
-
-  if (inventory.length === 0) {
-    empty.textContent = 'Nothing here yet';
-    empty.style.display = 'block';
-    return;
+  const lps = totalLPS();
+  if (lps > 0) {
+    const gain = lps * dt;
+    state.lemons += gain;
+    state.total += gain;
   }
 
-  if (filtered.length === 0) {
-    empty.textContent = 'No items match your search';
-    empty.style.display = 'block';
-    return;
-  }
-
-  empty.style.display = 'none';
-
-  filtered.forEach(item => {
-    const el = document.createElement('div');
-    el.className = 'inv-item';
-    el.style.borderColor = RARITY_HEX[item.rarity] || '#fff';
-    el.innerHTML = `<div class="inv-emoji">${item.emoji}</div><div class="inv-name">${item.name}</div>`;
-    grid.appendChild(el);
-  });
+  updateStats();
+  // Re-render sides every 500ms to avoid thrashing
+  requestAnimationFrame(gameLoop);
 }
 
-// Init
-buildChancesTable();
+// Slow re-render for sidebars
+setInterval(() => {
+  renderUpgrades();
+  renderGenerators();
+  checkAchievements();
+}, 500);
+
+// ============================================================
+// INIT
+// ============================================================
+render();
+gameLoop();
 </script>
 </body>
 </html>
