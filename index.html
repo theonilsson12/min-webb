@@ -1,1028 +1,772 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🍋 Lemon Empire</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #0b0b0b;
-  --surface: #111111;
-  --surface2: #181818;
-  --surface3: #202020;
-  --border: #272727;
-  --border2: #333;
-  --lemon: #f5d000;
-  --lemon-dim: #b89d00;
-  --lemon-pale: rgba(245,208,0,0.12);
-  --lemon-glow: rgba(245,208,0,0.2);
-  --acid: #c8ff00;
-  --text: #e0e0e0;
-  --text-dim: #5a5a5a;
-  --text-mid: #888;
-  --danger: #ff4455;
-  --ok: #44ff88;
-  --radius: 9px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:'DM Mono',monospace;
-  display:flex;
-  flex-direction:column;
-}
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GhostWallet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0a0a0f;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:24px 16px 60px}
+    .phone{width:100%;max-width:390px;background:#111118;border-radius:40px;overflow:hidden;box-shadow:0 0 80px rgba(140,100,255,.15),0 0 0 1px rgba(255,255,255,.06);position:relative}
 
-/* noise */
-body::after{
-  content:'';position:fixed;inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-  pointer-events:none;z-index:9999;opacity:.7;
-}
+    /* Header */
+    .header{display:flex;justify-content:space-between;align-items:center;padding:20px 20px 0}
+    .wallet-identity{display:flex;align-items:center;gap:10px}
+    .ghost-icon{width:38px;height:38px;background:linear-gradient(135deg,#2d2040,#1a1a2e);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;border:1px solid rgba(140,100,255,.3)}
+    .wallet-name-block{display:flex;flex-direction:column}
+    .wallet-handle{font-size:11px;color:#7a7a99;font-weight:500}
+    .wallet-name{font-size:16px;font-weight:700;color:#fff}
+    .header-actions{display:flex;gap:14px;align-items:center}
+    .header-actions svg{width:22px;height:22px;stroke:#9090b0;fill:none;cursor:pointer}
+    .header-actions svg:hover{stroke:#fff}
+    .edit-badge{background:rgba(140,100,255,.2);border:1px solid rgba(140,100,255,.4);color:#c0b0ff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;cursor:pointer;transition:background .15s;white-space:nowrap}
+    .edit-badge:hover{background:rgba(140,100,255,.35)}
 
-/* HEADER */
-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:12px 20px;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  flex-shrink:0;
-  gap:12px;
-  flex-wrap:wrap;
-}
-.logo{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:1.7rem;letter-spacing:.1em;
-  color:var(--lemon);
-  text-shadow:0 0 24px var(--lemon-glow);
-  white-space:nowrap;
-}
-.hstats{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
-.hstat{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
-.hstat .hl{font-size:.55rem;color:var(--text-dim);letter-spacing:.18em;text-transform:uppercase}
-.hstat .hv{font-size:.85rem;color:var(--lemon);font-weight:500}
-.save-indicator{
-  font-size:.6rem;color:var(--text-dim);letter-spacing:.1em;
-  display:flex;align-items:center;gap:5px;
-}
-.save-dot{width:6px;height:6px;border-radius:50%;background:var(--text-dim);transition:background .3s}
-.save-dot.saved{background:var(--ok)}
+    /* Balance */
+    .balance-section{padding:20px 20px 0}
+    .balance-amount{font-size:40px;font-weight:800;letter-spacing:-1.5px;color:#fff;line-height:1.1}
+    .balance-change{display:flex;align-items:center;gap:8px;margin-top:6px}
+    .change-dollar{color:#52e07c;font-size:15px;font-weight:600}
+    .change-pct{background:#1e3d2a;color:#52e07c;font-size:12px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid rgba(82,224,124,.25)}
 
-/* MAIN LAYOUT */
-.layout{
-  display:grid;
-  grid-template-columns:260px 1fr 260px;
-  flex:1;
-  overflow:hidden;
-  min-height:0;
-}
+    /* Action buttons */
+    .actions{display:flex;gap:10px;padding:18px 20px 0}
+    .action-btn{flex:1;background:#1c1c2a;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:background .15s,border-color .15s}
+    .action-btn:hover{background:#252536;border-color:rgba(140,100,255,.3)}
+    .action-btn:active{transform:scale(.96)}
+    .action-btn svg{width:22px;height:22px;stroke:#c0b0ff;fill:none}
+    .action-btn span{font-size:12px;color:#9090b0;font-weight:500}
 
-/* PANELS */
-.panel{
-  overflow-y:auto;
-  overflow-x:hidden;
-  padding:14px 12px;
-  background:var(--surface);
-}
-.panel-left{border-right:1px solid var(--border)}
-.panel-right{border-left:1px solid var(--border)}
+    /* Cash card */
+    .cash-card{margin:16px 20px 0;background:#1c1c2a;border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+    .cash-label{font-size:12px;color:#7a7a99;margin-bottom:4px}
+    .cash-amount{font-size:22px;font-weight:700}
+    .add-cash-btn{background:rgba(140,100,255,.18);color:#c0b0ff;border:1px solid rgba(140,100,255,.3);border-radius:20px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;font-family:inherit}
+    .add-cash-btn:hover{background:rgba(140,100,255,.3)}
 
-::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+    /* Tokens */
+    .tokens-header{display:flex;align-items:center;gap:4px;padding:20px 20px 10px;cursor:pointer}
+    .tokens-header span{font-size:18px;font-weight:700}
+    .tokens-header .arrow{color:#7a7a99;font-size:16px}
+    .token-list{padding:0 20px;display:flex;flex-direction:column;gap:10px}
+    .token-card{background:#1c1c2a;border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:background .15s,border-color .15s}
+    .token-card:hover{background:#232335;border-color:rgba(140,100,255,.25)}
+    .token-card:active{transform:scale(.98)}
+    .token-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+    .token-icon.btc{background:radial-gradient(circle at 35% 35%,#f7931a,#c36a0a)}
+    .token-icon.eth{background:radial-gradient(circle at 35% 35%,#627eea,#3c54c4)}
+    .token-icon.sol{background:radial-gradient(circle at 35% 35%,#9945ff,#14f195 180%)}
+    .token-info{flex:1;min-width:0}
+    .token-name-row{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+    .token-name{font-size:15px;font-weight:700}
+    .verified{font-size:14px}
+    .token-amount{font-size:13px;color:#7a7a99;font-weight:500}
+    .token-value{text-align:right}
+    .token-usd{font-size:16px;font-weight:700}
+    .token-change{font-size:13px;color:#52e07c;font-weight:600;margin-top:2px}
 
-.section-title{
-  font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;
-  color:var(--text-dim);margin-bottom:10px;padding-bottom:6px;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-}
-.section-title span{color:var(--lemon);font-size:.65rem}
+    /* Bottom nav */
+    .bottom-nav{display:flex;justify-content:space-around;align-items:center;padding:16px 20px 28px;margin-top:20px;border-top:1px solid rgba(255,255,255,.06)}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:#7a7a99;transition:color .15s;padding:4px 8px}
+    .nav-item.active{color:#c0b0ff}
+    .nav-item:hover{color:#c0b0ff}
+    .nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none}
 
-/* TABS (left panel) */
-.tabs{display:flex;gap:4px;margin-bottom:12px}
-.tab{
-  flex:1;padding:6px 4px;text-align:center;font-size:.62rem;
-  font-family:'DM Mono',monospace;letter-spacing:.08em;
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:6px;cursor:pointer;color:var(--text-dim);
-  transition:all .15s;
-}
-.tab:hover{border-color:var(--border2);color:var(--text-mid)}
-.tab.active{background:var(--lemon-pale);border-color:var(--lemon-dim);color:var(--lemon)}
+    /* Overlay system */
+    .overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:flex;flex-direction:column;justify-content:flex-end;opacity:0;pointer-events:none;transition:opacity .25s;z-index:100;border-radius:40px}
+    .overlay.open{opacity:1;pointer-events:all}
+    .sheet{background:#18181f;border-radius:28px 28px 0 0;padding:0 0 32px;transform:translateY(40px);transition:transform .3s cubic-bezier(.34,1.1,.64,1);border:1px solid rgba(255,255,255,.08);border-bottom:none;max-height:85%;overflow-y:auto}
+    .overlay.open .sheet{transform:translateY(0)}
+    .sheet-handle{width:40px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:12px auto 0}
+    .sheet-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 4px}
+    .sheet-title{font-size:18px;font-weight:700}
+    .close-btn{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;font-family:inherit}
+    .close-btn:hover{background:rgba(255,255,255,.2)}
 
-.tab-content{display:none}
-.tab-content.active{display:block}
+    /* Inputs */
+    .sheet-body{padding:12px 20px}
+    .input-group{margin-bottom:14px}
+    .input-label{font-size:12px;color:#7a7a99;font-weight:600;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
+    .input-field{width:100%;background:#111118;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;color:#fff;font-size:15px;font-family:inherit;outline:none;transition:border-color .2s}
+    .input-field:focus{border-color:rgba(140,100,255,.5)}
+    .input-field::placeholder{color:#4a4a66}
 
-/* UPGRADE CARDS */
-.upg-card{
-  display:flex;align-items:center;gap:9px;
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:var(--radius);padding:9px 10px;margin-bottom:7px;
-  cursor:pointer;transition:all .15s;position:relative;overflow:hidden;
-}
-.upg-card::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,var(--lemon-pale),transparent);
-  opacity:0;transition:opacity .2s;
-}
-.upg-card:hover::before{opacity:1}
-.upg-card:hover{border-color:var(--lemon-dim);transform:translateX(2px)}
-.upg-card.can-buy{border-color:rgba(245,208,0,.28)}
-.upg-card.can-buy:hover{border-color:var(--lemon);box-shadow:0 0 10px var(--lemon-glow)}
-.upg-card.bought{opacity:.35;cursor:default;pointer-events:none}
-.upg-card.bought:hover{transform:none}
-.upg-icon{font-size:1.4rem;flex-shrink:0}
-.upg-body{flex:1;min-width:0}
-.upg-name{font-size:.75rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.upg-desc{font-size:.6rem;color:var(--text-dim);margin-top:1px}
-.upg-cost{font-size:.7rem;color:var(--lemon);flex-shrink:0}
-.upg-cost.dim{color:var(--text-dim)}
+    /* Token selector pills */
+    .token-select{display:flex;gap:8px;margin-bottom:14px}
+    .token-pill{flex:1;background:#111118;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:border-color .15s}
+    .token-pill.selected{border-color:rgba(140,100,255,.5);background:rgba(140,100,255,.1)}
+    .token-pill:hover{border-color:rgba(140,100,255,.3)}
+    .pill-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px}
+    .pill-icon.btc{background:radial-gradient(circle at 35% 35%,#f7931a,#c36a0a)}
+    .pill-icon.eth{background:radial-gradient(circle at 35% 35%,#627eea,#3c54c4)}
+    .pill-icon.sol{background:radial-gradient(circle at 35% 35%,#9945ff,#14f195 180%)}
+    .pill-name{font-size:13px;font-weight:600}
+    .pill-bal{font-size:11px;color:#7a7a99}
 
-/* SKIN CARDS */
-.skin-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}
-.skin-card{
-  display:flex;flex-direction:column;align-items:center;gap:5px;
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:var(--radius);padding:10px 8px;
-  cursor:pointer;transition:all .2s;text-align:center;position:relative;
-}
-.skin-card:hover{border-color:var(--lemon-dim)}
-.skin-card.active-skin{
-  border-color:var(--lemon);
-  background:var(--lemon-pale);
-  box-shadow:0 0 12px var(--lemon-glow);
-}
-.skin-card.locked{opacity:.5;filter:grayscale(.7)}
-.skin-card.locked:hover{border-color:var(--border)}
-.skin-emoji{font-size:2rem;line-height:1}
-.skin-name{font-size:.62rem;color:var(--text);font-weight:500}
-.skin-bonus{font-size:.58rem;color:var(--acid)}
-.skin-unlock{font-size:.55rem;color:var(--text-dim);margin-top:1px}
-.skin-badge{
-  position:absolute;top:4px;right:4px;
-  font-size:.5rem;background:var(--lemon);color:#000;
-  border-radius:4px;padding:1px 4px;font-weight:700;letter-spacing:.05em;
-}
+    /* Primary button */
+    .primary-btn{width:100%;padding:15px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:16px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px;font-family:inherit;transition:opacity .15s,transform .1s;box-shadow:0 4px 20px rgba(140,100,255,.3)}
+    .primary-btn:hover{opacity:.9}
+    .primary-btn:active{transform:scale(.98)}
 
-/* CENTER */
-.center{
-  display:flex;flex-direction:column;align-items:center;
-  padding:24px 16px;gap:18px;overflow-y:auto;
-  background:var(--bg);
-}
+    /* Receive QR */
+    .qr-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 20px 0}
+    .qr-svg{width:160px;height:160px;margin:12px 0 16px}
+    .wallet-addr{font-size:11px;color:#7a7a99;word-break:break-all;text-align:center;background:#111118;border-radius:12px;padding:10px 12px;width:100%;border:1px solid rgba(255,255,255,.07);cursor:pointer}
+    .wallet-addr:hover{border-color:rgba(140,100,255,.3)}
+    .copy-hint{font-size:11px;color:#9060ff;margin-top:6px}
 
-.count-display{text-align:center}
-.big-num{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:4rem;color:var(--lemon);line-height:1;
-  text-shadow:0 0 50px rgba(245,208,0,.25);
-  letter-spacing:.04em;
-  transition:text-shadow .2s;
-}
-.big-num.flash{text-shadow:0 0 80px rgba(245,208,0,.7)}
-.count-sub{font-size:.62rem;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase;margin-top:3px}
+    /* Buy chips */
+    .buy-amounts{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+    .amount-chip{padding:8px 16px;background:#111118;border:1px solid rgba(255,255,255,.1);border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;color:#fff;font-family:inherit}
+    .amount-chip.selected{background:rgba(140,100,255,.2);border-color:#9060ff;color:#c0b0ff}
+    .amount-chip:hover{border-color:rgba(140,100,255,.4)}
 
-/* CLICKER */
-.clicker-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:200px;height:200px}
-.glow-ring{
-  position:absolute;width:200px;height:200px;border-radius:50%;
-  background:radial-gradient(circle,rgba(245,208,0,.12) 0%,transparent 70%);
-  animation:pulse-r 2.8s ease-in-out infinite;
-  pointer-events:none;
-}
-.glow-ring2{
-  position:absolute;width:240px;height:240px;border-radius:50%;
-  background:radial-gradient(circle,rgba(245,208,0,.05) 0%,transparent 65%);
-  animation:pulse-r 2.8s ease-in-out infinite;
-  animation-delay:1.4s;
-  pointer-events:none;
-}
-@keyframes pulse-r{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.1);opacity:1}}
+    /* Add cash methods */
+    .cash-methods{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+    .cash-method{background:#111118;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s}
+    .cash-method:hover{border-color:rgba(140,100,255,.3)}
+    .cash-method.selected{border-color:rgba(140,100,255,.5);background:rgba(140,100,255,.08)}
+    .method-icon{font-size:22px}
+    .method-info{flex:1}
+    .method-name{font-size:14px;font-weight:600}
+    .method-desc{font-size:12px;color:#7a7a99;margin-top:2px}
+    .method-check{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:11px}
+    .cash-method.selected .method-check{background:#9060ff;border-color:#9060ff}
 
-.main-lemon{
-  font-size:6.5rem;cursor:pointer;user-select:none;
-  transition:transform .08s ease,filter .08s ease;
-  filter:drop-shadow(0 0 18px rgba(245,208,0,.4));
-  position:relative;z-index:2;
-  animation:float-l 3.2s ease-in-out infinite;
-}
-@keyframes float-l{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
-.main-lemon:active{transform:scale(.86) translateY(3px) !important;filter:drop-shadow(0 0 36px rgba(245,208,0,.9)) !important;animation-play-state:paused}
+    /* Token detail */
+    .token-detail-header{display:flex;flex-direction:column;align-items:center;padding:0 20px 8px}
+    .detail-icon{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:10px}
+    .detail-price{font-size:32px;font-weight:800}
+    .detail-change{font-size:14px;color:#52e07c;font-weight:600;margin-top:4px}
+    .mini-chart{width:100%;height:80px;margin:12px 0}
+    .detail-stats{display:flex;gap:10px;margin-bottom:14px;width:100%}
+    .stat-box{flex:1;background:#111118;border-radius:14px;padding:12px;border:1px solid rgba(255,255,255,.07)}
+    .stat-label{font-size:11px;color:#7a7a99;margin-bottom:4px}
+    .stat-val{font-size:14px;font-weight:700}
+    .detail-actions{display:flex;gap:10px;width:100%}
+    .detail-action-btn{flex:1;padding:13px;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+    .detail-action-btn.primary{background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;color:#fff}
+    .detail-action-btn.secondary{background:transparent;border:1px solid rgba(140,100,255,.4);color:#c0b0ff}
 
-/* STATS BAR */
-.stats-bar{
-  display:flex;gap:0;
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);overflow:hidden;
-  width:100%;max-width:380px;
-}
-.sbar-item{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  gap:2px;padding:10px 8px;
-  border-right:1px solid var(--border);
-}
-.sbar-item:last-child{border-right:none}
-.sbar-label{font-size:.52rem;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase}
-.sbar-val{font-size:.82rem;color:var(--acid);font-weight:500}
+    /* History */
+    .tx-list{display:flex;flex-direction:column;gap:2px}
+    .tx-item{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;transition:background .15s}
+    .tx-item:hover{background:rgba(255,255,255,.03)}
+    .tx-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .tx-icon.sent{background:rgba(239,68,68,.15)}
+    .tx-icon.received{background:rgba(82,224,124,.15)}
+    .tx-icon.swapped{background:rgba(140,100,255,.15)}
+    .tx-info{flex:1}
+    .tx-type{font-size:14px;font-weight:600}
+    .tx-date{font-size:12px;color:#7a7a99;margin-top:2px}
+    .tx-amount{text-align:right}
+    .tx-usd{font-size:14px;font-weight:700}
+    .tx-usd.negative{color:#ef4444}
+    .tx-usd.positive{color:#52e07c}
+    .tx-coin{font-size:12px;color:#7a7a99;margin-top:2px}
 
-/* ACHIEVEMENTS STRIP */
-.ach-strip{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:420px}
-.ach{
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:6px;padding:5px 9px;
-  font-size:.6rem;color:var(--text-dim);
-  display:flex;align-items:center;gap:4px;
-  transition:all .3s ease;
-  white-space:nowrap;
-}
-.ach.done{border-color:var(--lemon-dim);color:var(--lemon);background:var(--lemon-pale)}
+    /* Search */
+    .search-input-wrap{padding:0 20px 12px}
+    .search-field{width:100%;background:#111118;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:11px 14px;color:#fff;font-size:15px;font-family:inherit;outline:none;transition:border-color .2s}
+    .search-field:focus{border-color:rgba(140,100,255,.5)}
+    .search-field::placeholder{color:#4a4a66}
+    .search-results{padding:0 20px}
+    .search-result{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer}
+    .search-result:last-child{border-bottom:none}
+    .sr-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+    .sr-info{flex:1}
+    .sr-name{font-size:14px;font-weight:600}
+    .sr-sym{font-size:12px;color:#7a7a99}
+    .sr-price{text-align:right}
+    .sr-usd{font-size:14px;font-weight:600}
+    .sr-chg{font-size:12px;color:#52e07c;font-weight:600}
 
-/* PRESTIGE */
-.prestige-section{display:flex;flex-direction:column;align-items:center;gap:6px}
-.prestige-btn{
-  background:transparent;border:1px solid #333;
-  color:var(--text-dim);border-radius:var(--radius);
-  padding:8px 22px;font-family:'DM Mono',monospace;
-  font-size:.68rem;cursor:pointer;letter-spacing:.12em;
-  text-transform:uppercase;transition:all .2s ease;
-}
-.prestige-btn:hover{border-color:var(--danger);color:var(--danger)}
-.prestige-btn.ready{border-color:var(--danger);color:var(--danger);animation:dpulse 1.6s ease-in-out infinite}
-@keyframes dpulse{0%,100%{box-shadow:none}50%{box-shadow:0 0 18px rgba(255,68,85,.3)}}
-.prestige-info{font-size:.58rem;color:var(--text-dim);text-align:center}
+    /* Swap */
+    .swap-arrow{text-align:center;padding:4px 0;color:#7a7a99;font-size:20px;cursor:pointer;transition:transform .3s}
+    .swap-rate{font-size:12px;color:#7a7a99;text-align:center;margin-bottom:10px}
 
-/* GENERATORS */
-.gen-card{
-  display:grid;grid-template-columns:auto 1fr auto;
-  align-items:center;gap:10px;
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:var(--radius);padding:11px 11px 13px;
-  margin-bottom:7px;cursor:pointer;transition:all .15s;
-  position:relative;overflow:hidden;
-}
-.gen-card::after{
-  content:'';position:absolute;bottom:0;left:0;height:2px;
-  background:linear-gradient(90deg,var(--lemon),var(--acid));
-  width:var(--prog,0%);transition:width .4s ease;
-}
-.gen-card:hover{border-color:var(--lemon-dim)}
-.gen-card.can-buy{border-color:rgba(245,208,0,.25)}
-.gen-card.can-buy:hover{border-color:var(--lemon);box-shadow:0 0 14px var(--lemon-glow)}
-.gen-emoji{font-size:1.65rem}
-.gen-name{font-size:.76rem;font-weight:500;color:var(--text)}
-.gen-rate{font-size:.58rem;color:var(--text-dim);margin-top:1px}
-.gen-right{text-align:right}
-.gen-count{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--lemon);line-height:1}
-.gen-cost{font-size:.62rem;color:var(--text-dim);margin-top:2px}
-.gen-cost.af{color:var(--lemon-dim)}
+    /* ═══ EDIT PANEL ═══ */
+    .edit-section{margin-bottom:20px}
+    .edit-section-title{font-size:13px;font-weight:700;color:#9060ff;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+    .edit-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .edit-row-label{font-size:12px;color:#7a7a99;font-weight:600;min-width:70px}
+    .edit-row .input-field{margin:0;flex:1}
+    .edit-divider{height:1px;background:rgba(255,255,255,.07);margin:16px 0}
+    .tx-edit-row{background:#111118;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+    .tx-edit-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .tx-type-select{background:#1c1c2a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:12px;font-family:inherit;padding:4px 8px;cursor:pointer;outline:none}
+    .tx-edit-fields{display:flex;gap:8px}
+    .tx-edit-fields .input-field{font-size:13px;padding:8px 10px}
+    .del-btn{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#f87171;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+    .del-btn:hover{background:rgba(239,68,68,.3)}
+    .add-tx-btn{width:100%;padding:10px;background:rgba(140,100,255,.15);border:1px dashed rgba(140,100,255,.4);border-radius:12px;color:#c0b0ff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;margin-bottom:14px}
+    .add-tx-btn:hover{background:rgba(140,100,255,.25)}
 
-/* BULK BUY */
-.bulk-row{display:flex;gap:5px;margin-bottom:10px}
-.bulk-btn{
-  flex:1;padding:5px 4px;text-align:center;font-size:.6rem;
-  font-family:'DM Mono',monospace;
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:6px;cursor:pointer;color:var(--text-dim);
-  transition:all .15s;
-}
-.bulk-btn:hover{border-color:var(--border2);color:var(--text)}
-.bulk-btn.active{background:var(--lemon-pale);border-color:var(--lemon-dim);color:var(--lemon)}
+    /* Token edit rows */
+    .token-edit-row{background:#111118;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+    .token-edit-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .token-edit-fields{display:flex;gap:8px}
+    .token-edit-fields .input-field{font-size:13px;padding:8px 10px}
 
-/* PARTICLE */
-.particle{
-  position:fixed;pointer-events:none;
-  font-size:1.1rem;font-weight:500;color:var(--lemon);
-  text-shadow:0 0 8px var(--lemon);
-  font-family:'DM Mono',monospace;z-index:8000;
-  animation:flyup .85s ease-out forwards;
-}
-@keyframes flyup{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-75px) scale(.6)}}
-
-/* TOAST */
-#toasts{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:9000;display:flex;flex-direction:column;gap:7px;align-items:center;pointer-events:none}
-.toast{
-  background:var(--surface2);border:1px solid var(--lemon-dim);color:var(--lemon);
-  padding:9px 18px;border-radius:8px;font-size:.74rem;
-  animation:tin .25s ease,tout .25s ease 2.2s forwards;
-  box-shadow:0 0 18px var(--lemon-glow);white-space:nowrap;
-}
-@keyframes tin{from{opacity:0;transform:translateY(10px) scale(.95)}to{opacity:1;transform:none}}
-@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-5px)}}
-
-/* MODAL */
-.modal-bg{
-  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:7000;
-  display:flex;align-items:center;justify-content:center;
-  backdrop-filter:blur(3px);
-}
-.modal-bg.hidden{display:none}
-.modal{
-  background:var(--surface);border:1px solid var(--border2);
-  border-radius:12px;padding:28px;max-width:380px;width:90%;
-  box-shadow:0 0 40px rgba(0,0,0,.6);
-}
-.modal h2{font-family:'Bebas Neue',sans-serif;color:var(--lemon);font-size:1.8rem;letter-spacing:.08em;margin-bottom:8px}
-.modal p{font-size:.72rem;color:var(--text-mid);line-height:1.6;margin-bottom:18px}
-.modal-btns{display:flex;gap:10px}
-.mbtn{
-  flex:1;padding:9px;font-family:'DM Mono',monospace;font-size:.7rem;
-  border-radius:7px;cursor:pointer;letter-spacing:.1em;text-transform:uppercase;
-  transition:all .15s;
-}
-.mbtn-cancel{background:var(--surface2);border:1px solid var(--border2);color:var(--text-mid)}
-.mbtn-cancel:hover{border-color:var(--text-mid);color:var(--text)}
-.mbtn-confirm{background:transparent;border:1px solid var(--danger);color:var(--danger)}
-.mbtn-confirm:hover{background:rgba(255,68,85,.1)}
-</style>
+    /* Toast */
+    .toast{position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#252540;border:1px solid rgba(140,100,255,.3);border-radius:20px;padding:10px 20px;font-size:13px;font-weight:600;color:#c0b0ff;opacity:0;pointer-events:none;transition:all .3s;white-space:nowrap;z-index:200}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  </style>
 </head>
 <body>
+<div class="phone" id="phone">
 
-<!-- HEADER -->
-<header>
-  <div class="logo">🍋 Lemon Empire</div>
-  <div class="hstats">
-    <div class="hstat"><span class="hl">Total Squeezed</span><span class="hv" id="h-total">0</span></div>
-    <div class="hstat"><span class="hl">Per Second</span><span class="hv" id="h-lps">0/s</span></div>
-    <div class="hstat"><span class="hl">Prestige</span><span class="hv" id="h-prestige">Lv.0</span></div>
-    <div class="hstat"><span class="hl">Skin</span><span class="hv" id="h-skin">Classic</span></div>
-  </div>
-  <div class="save-indicator">
-    <div class="save-dot" id="save-dot"></div>
-    <span id="save-txt">Saved</span>
-  </div>
-</header>
-
-<!-- LAYOUT -->
-<div class="layout">
-
-  <!-- LEFT PANEL -->
-  <div class="panel panel-left">
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('upgrades')">⚡ Upgrades</div>
-      <div class="tab" onclick="switchTab('skins')">🎨 Skins</div>
-      <div class="tab" onclick="switchTab('stats')">📊 Stats</div>
+  <!-- Header -->
+  <div class="header">
+    <div class="wallet-identity">
+      <div class="ghost-icon">👻</div>
+      <div class="wallet-name-block">
+        <span class="wallet-handle" id="display-handle">@GhostWallet</span>
+        <span class="wallet-name" id="display-name">GhostWallet</span>
+      </div>
     </div>
-
-    <!-- UPGRADES TAB -->
-    <div class="tab-content active" id="tab-upgrades">
-      <div class="section-title">Click Upgrades</div>
-      <div id="click-upgrades"></div>
-      <div class="section-title" style="margin-top:10px">Production Upgrades</div>
-      <div id="prod-upgrades"></div>
-      <div class="section-title" style="margin-top:10px">Special Upgrades</div>
-      <div id="special-upgrades"></div>
-    </div>
-
-    <!-- SKINS TAB -->
-    <div class="tab-content" id="tab-skins">
-      <div class="section-title">Lemon Skins <span id="skins-unlocked">0/0</span></div>
-      <div class="skin-grid" id="skin-grid"></div>
-    </div>
-
-    <!-- STATS TAB -->
-    <div class="tab-content" id="tab-stats">
-      <div class="section-title">Lifetime Stats</div>
-      <div id="stats-list" style="font-size:.68rem;line-height:2;color:var(--text-mid)"></div>
+    <div class="header-actions">
+      <button class="edit-badge" onclick="openOverlay('edit')">✏️ Edit</button>
+      <svg viewBox="0 0 24 24" stroke-width="2" onclick="openOverlay('history')">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <svg viewBox="0 0 24 24" stroke-width="2" onclick="openOverlay('search')">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
     </div>
   </div>
 
-  <!-- CENTER -->
-  <div class="center">
-    <div class="count-display">
-      <div class="big-num" id="lemon-count">0</div>
-      <div class="count-sub">🍋 lemons in stock</div>
-    </div>
-
-    <div class="clicker-wrap">
-      <div class="glow-ring2"></div>
-      <div class="glow-ring"></div>
-      <div class="main-lemon" id="main-lemon">🍋</div>
-    </div>
-
-    <div class="stats-bar">
-      <div class="sbar-item"><span class="sbar-label">Per Click</span><span class="sbar-val" id="s-click">1</span></div>
-      <div class="sbar-item"><span class="sbar-label">Per Second</span><span class="sbar-val" id="s-lps">0</span></div>
-      <div class="sbar-item"><span class="sbar-label">Multiplier</span><span class="sbar-val" id="s-mult">×1</span></div>
-      <div class="sbar-item"><span class="sbar-label">Skin Bonus</span><span class="sbar-val" id="s-skin">×1</span></div>
-    </div>
-
-    <div class="ach-strip" id="ach-strip"></div>
-
-    <div class="prestige-section">
-      <button class="prestige-btn" id="prestige-btn" onclick="openPrestige()">☢ Prestige Reset</button>
-      <div class="prestige-info" id="prestige-info">Requires 10M total lemons</div>
+  <!-- Balance -->
+  <div class="balance-section">
+    <div class="balance-amount" id="display-balance">$6,486,518.40</div>
+    <div class="balance-change">
+      <span class="change-dollar" id="display-change-dollar">+$73,574.22</span>
+      <span class="change-pct" id="display-change-pct">+185%</span>
     </div>
   </div>
 
-  <!-- RIGHT PANEL -->
-  <div class="panel panel-right">
-    <div class="section-title">🏭 Generators <span id="gen-total-lps">0/s</span></div>
-    <div class="bulk-row">
-      <div class="bulk-btn active" onclick="setBulk(1)" id="bulk-1">×1</div>
-      <div class="bulk-btn" onclick="setBulk(10)" id="bulk-10">×10</div>
-      <div class="bulk-btn" onclick="setBulk(25)" id="bulk-25">×25</div>
-      <div class="bulk-btn" onclick="setBulk(100)" id="bulk-100">×100</div>
-      <div class="bulk-btn" onclick="setBulk('max')" id="bulk-max">MAX</div>
-    </div>
-    <div id="gen-list"></div>
+  <!-- Actions -->
+  <div class="actions">
+    <button class="action-btn" onclick="openOverlay('send')">
+      <svg viewBox="0 0 24 24" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      <span>Send</span>
+    </button>
+    <button class="action-btn" onclick="openOverlay('swap')">
+      <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      <span>Swap</span>
+    </button>
+    <button class="action-btn" onclick="openOverlay('receive')">
+      <svg viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span>Receive</span>
+    </button>
+    <button class="action-btn" onclick="openOverlay('edit')">
+      <svg viewBox="0 0 24 24" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span>Buy</span>
+    </button>
   </div>
 
+  <!-- Cash card -->
+  <div class="cash-card">
+    <div>
+      <div class="cash-label">Cash Balance</div>
+      <div class="cash-amount" id="display-cash">$0.00</div>
+    </div>
+  </div>
+
+  <!-- Tokens -->
+  <div class="tokens-header" onclick="openOverlay('search')">
+    <span>Tokens</span><span class="arrow">›</span>
+  </div>
+  <div class="token-list" id="token-list-display"></div>
+
+  <!-- Bottom nav -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="setNav(this)">
+      <svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/></svg>
+    </div>
+    <div class="nav-item" onclick="setNav(this);openOverlay('history')">
+      <svg viewBox="0 0 24 24" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    </div>
+    <div class="nav-item" onclick="setNav(this);openOverlay('swap')">
+      <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    <div class="nav-item" onclick="setNav(this);openOverlay('search')">
+      <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════
+       OVERLAYS
+  ═══════════════════════════ -->
+
+  <!-- SEND -->
+  <div class="overlay" id="overlay-send" onclick="closeOnBg(event,'send')">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><span class="sheet-title">Send</span><button class="close-btn" onclick="closeOverlay('send')">✕</button></div>
+      <div class="sheet-body">
+        <div class="input-group"><div class="input-label">To Address</div><input class="input-field" type="text" placeholder="0x… or wallet name"/></div>
+        <div class="input-group"><div class="input-label">Token</div>
+          <div class="token-select">
+            <div class="token-pill selected" onclick="selectPill(this)"><div class="pill-icon btc">₿</div><div><div class="pill-name">BTC</div><div class="pill-bal" id="send-btc-bal">97 BTC</div></div></div>
+            <div class="token-pill" onclick="selectPill(this)"><div class="pill-icon eth">Ξ</div><div><div class="pill-name">ETH</div><div class="pill-bal" id="send-eth-bal">8 ETH</div></div></div>
+            <div class="token-pill" onclick="selectPill(this)"><div class="pill-icon sol">◎</div><div><div class="pill-name">SOL</div><div class="pill-bal" id="send-sol-bal">86 SOL</div></div></div>
+          </div>
+        </div>
+        <div class="input-group"><div class="input-label">Amount</div><input class="input-field" type="number" placeholder="0.00"/></div>
+        <button class="primary-btn" onclick="confirmAction('send')">Review Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SWAP -->
+  <div class="overlay" id="overlay-swap" onclick="closeOnBg(event,'swap')">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><span class="sheet-title">Swap</span><button class="close-btn" onclick="closeOverlay('swap')">✕</button></div>
+      <div class="sheet-body">
+        <div class="input-label" style="margin-bottom:8px">From</div>
+        <div class="token-select">
+          <div class="token-pill selected" onclick="selectPill(this)"><div class="pill-icon btc">₿</div><div><div class="pill-name">BTC</div></div></div>
+          <div class="token-pill" onclick="selectPill(this)"><div class="pill-icon eth">Ξ</div><div><div class="pill-name">ETH</div></div></div>
+          <div class="token-pill" onclick="selectPill(this)"><div class="pill-icon sol">◎</div><div><div class="pill-name">SOL</div></div></div>
+        </div>
+        <div class="input-group"><input class="input-field" type="number" placeholder="Amount to swap"/></div>
+        <div class="swap-arrow" onclick="this.style.transform=this.style.transform?'':'rotate(180deg)'">⇅</div>
+        <div class="input-label" style="margin:8px 0">To</div>
+        <div class="token-select">
+          <div class="token-pill" onclick="selectPill(this)"><div class="pill-icon eth">Ξ</div><div><div class="pill-name">ETH</div></div></div>
+          <div class="token-pill selected" onclick="selectPill(this)"><div class="pill-icon sol">◎</div><div><div class="pill-name">SOL</div></div></div>
+          <div class="token-pill" onclick="selectPill(this)"><div class="pill-icon btc">₿</div><div><div class="pill-name">BTC</div></div></div>
+        </div>
+        <div class="swap-rate">1 BTC ≈ 13.2 ETH · Est. fee: $4.20</div>
+        <button class="primary-btn" onclick="confirmAction('swap')">Preview Swap</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECEIVE -->
+  <div class="overlay" id="overlay-receive" onclick="closeOnBg(event,'receive')">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><span class="sheet-title">Receive</span><button class="close-btn" onclick="closeOverlay('receive')">✕</button></div>
+      <div class="qr-wrap">
+        <svg class="qr-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <rect width="200" height="200" fill="white"/>
+          <rect x="10" y="10" width="60" height="60" rx="4" fill="#111"/><rect x="18" y="18" width="44" height="44" rx="2" fill="white"/><rect x="26" y="26" width="28" height="28" rx="1" fill="#111"/>
+          <rect x="130" y="10" width="60" height="60" rx="4" fill="#111"/><rect x="138" y="18" width="44" height="44" rx="2" fill="white"/><rect x="146" y="26" width="28" height="28" rx="1" fill="#111"/>
+          <rect x="10" y="130" width="60" height="60" rx="4" fill="#111"/><rect x="18" y="138" width="44" height="44" rx="2" fill="white"/><rect x="26" y="146" width="28" height="28" rx="1" fill="#111"/>
+          <rect x="80" y="10" width="8" height="8" fill="#111"/><rect x="96" y="10" width="8" height="8" fill="#111"/><rect x="112" y="10" width="8" height="8" fill="#111"/>
+          <rect x="80" y="26" width="8" height="8" fill="#111"/><rect x="112" y="26" width="8" height="8" fill="#111"/><rect x="80" y="42" width="8" height="8" fill="#111"/>
+          <rect x="80" y="80" width="8" height="8" fill="#111"/><rect x="96" y="80" width="8" height="8" fill="#111"/><rect x="112" y="80" width="8" height="8" fill="#111"/>
+          <rect x="128" y="80" width="8" height="8" fill="#111"/><rect x="144" y="80" width="8" height="8" fill="#111"/><rect x="160" y="80" width="8" height="8" fill="#111"/>
+          <rect x="80" y="96" width="8" height="8" fill="#111"/><rect x="128" y="96" width="8" height="8" fill="#111"/>
+          <rect x="80" y="112" width="8" height="8" fill="#111"/><rect x="96" y="112" width="8" height="8" fill="#111"/><rect x="112" y="112" width="8" height="8" fill="#111"/><rect x="144" y="112" width="8" height="8" fill="#111"/>
+          <rect x="80" y="128" width="8" height="8" fill="#111"/><rect x="160" y="128" width="8" height="8" fill="#111"/>
+          <rect x="80" y="144" width="8" height="8" fill="#111"/><rect x="96" y="144" width="8" height="8" fill="#111"/><rect x="128" y="144" width="8" height="8" fill="#111"/><rect x="144" y="144" width="8" height="8" fill="#111"/>
+          <rect x="80" y="160" width="8" height="8" fill="#111"/><rect x="112" y="160" width="8" height="8" fill="#111"/><rect x="160" y="160" width="8" height="8" fill="#111"/>
+          <rect x="80" y="176" width="8" height="8" fill="#111"/><rect x="96" y="176" width="8" height="8" fill="#111"/><rect x="128" y="176" width="8" height="8" fill="#111"/><rect x="144" y="176" width="8" height="8" fill="#111"/><rect x="160" y="176" width="8" height="8" fill="#111"/>
+          <rect x="88" y="88" width="24" height="24" rx="4" fill="#7c3aed"/>
+          <text x="100" y="104" text-anchor="middle" font-size="14" fill="white">👻</text>
+        </svg>
+        <div class="wallet-addr" onclick="copyAddress()">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</div>
+        <div class="copy-hint">Tap to copy address</div>
+        <button class="primary-btn" style="margin-top:14px" onclick="copyAddress()">Copy Address</button>
+      </div>
+      <div style="height:20px"></div>
+    </div>
+  </div>
+
+  <!-- ADD CASH -->
+  <div class="overlay" id="overlay-addcash" onclick="closeOnBg(event,'addcash')">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><span class="sheet-title">Add Cash</span><button class="close-btn" onclick="closeOverlay('addcash')">✕</button></div>
+      <div class="sheet-body">
+        <div class="input-group"><div class="input-label">Amount</div><input class="input-field" type="number" placeholder="$0.00"/></div>
+        <div class="input-label" style="margin-bottom:8px">Payment Method</div>
+        <div class="cash-methods">
+          <div class="cash-method selected" onclick="selectMethod(this)"><div class="method-icon">🏦</div><div class="method-info"><div class="method-name">Bank Transfer (ACH)</div><div class="method-desc">Free · 1–3 business days</div></div><div class="method-check">✓</div></div>
+          <div class="cash-method" onclick="selectMethod(this)"><div class="method-icon">💳</div><div class="method-info"><div class="method-name">Debit Card</div><div class="method-desc">1.5% fee · Instant</div></div><div class="method-check"></div></div>
+          <div class="cash-method" onclick="selectMethod(this)"><div class="method-icon">📱</div><div class="method-info"><div class="method-name">Apple Pay</div><div class="method-desc">1.5% fee · Instant</div></div><div class="method-check"></div></div>
+        </div>
+        <button class="primary-btn" onclick="confirmAction('addcash')">Add Cash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="overlay" id="overlay-history" onclick="closeOnBg(event,'history')">
+    <div class="sheet" style="max-height:90%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><span class="sheet-title">Activity</span><button class="close-btn" onclick="closeOverlay('history')">✕</button></div>
+      <div style="height:8px"></div>
+      <div class="tx-list" id="tx-list-display"></div>
+      <div style="height:20px"></div>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="overlay" id="overlay-search" onclick="closeOnBg(event,'search')">
+    <div class="sheet" style="max-height:90%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><span class="sheet-title">Search</span><button class="close-btn" onclick="closeOverlay('search')">✕</button></div>
+      <div class="search-input-wrap"><input class="search-field" type="text" placeholder="Search tokens, wallets…" oninput="filterSearch(this.value)"/></div>
+      <div class="search-results" id="search-results">
+        <div class="search-result"><div class="sr-icon" style="background:radial-gradient(circle at 35% 35%,#f7931a,#c36a0a)">₿</div><div class="sr-info"><div class="sr-name">Bitcoin</div><div class="sr-sym">BTC</div></div><div class="sr-price"><div class="sr-usd">$66,631</div><div class="sr-chg">+1.14%</div></div></div>
+        <div class="search-result"><div class="sr-icon" style="background:radial-gradient(circle at 35% 35%,#627eea,#3c54c4)">Ξ</div><div class="sr-info"><div class="sr-name">Ethereum</div><div class="sr-sym">ETH</div></div><div class="sr-price"><div class="sr-usd">$2,048</div><div class="sr-chg">+1.30%</div></div></div>
+        <div class="search-result"><div class="sr-icon" style="background:radial-gradient(circle at 35% 35%,#9945ff,#14f195 180%)">◎</div><div class="sr-info"><div class="sr-name">Solana</div><div class="sr-sym">SOL</div></div><div class="sr-price"><div class="sr-usd">$79.44</div><div class="sr-chg">+2.14%</div></div></div>
+        <div class="search-result"><div class="sr-icon" style="background:#1652f0;color:#fff;font-size:14px;font-weight:800">CB</div><div class="sr-info"><div class="sr-name">Coinbase</div><div class="sr-sym">COIN</div></div><div class="sr-price"><div class="sr-usd">$224.10</div><div class="sr-chg">+0.82%</div></div></div>
+        <div class="search-result"><div class="sr-icon" style="background:#e84142;font-size:14px;font-weight:800">A</div><div class="sr-info"><div class="sr-name">Avalanche</div><div class="sr-sym">AVAX</div></div><div class="sr-price"><div class="sr-usd">$26.80</div><div class="sr-chg">+3.40%</div></div></div>
+      </div>
+      <div style="height:20px"></div>
+    </div>
+  </div>
+
+  <!-- TOKEN DETAIL -->
+  <div class="overlay" id="overlay-tokendetail" onclick="closeOnBg(event,'tokendetail')">
+    <div class="sheet" style="max-height:90%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header"><span class="sheet-title" id="detail-title">Bitcoin</span><button class="close-btn" onclick="closeOverlay('tokendetail')">✕</button></div>
+      <div class="token-detail-header">
+        <div class="detail-icon" id="detail-icon"></div>
+        <div class="detail-price" id="detail-price"></div>
+        <div class="detail-change" id="detail-change"></div>
+        <svg class="mini-chart" viewBox="0 0 300 80" preserveAspectRatio="none" id="sparkline">
+          <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9060ff" stop-opacity="0.3"/><stop offset="100%" stop-color="#9060ff" stop-opacity="0"/></linearGradient></defs>
+          <path id="spark-area" fill="url(#sg)"/>
+          <path id="spark-line" fill="none" stroke="#9060ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="detail-stats">
+          <div class="stat-box"><div class="stat-label">Holdings</div><div class="stat-val" id="detail-holdings">—</div></div>
+          <div class="stat-box"><div class="stat-label">24h Change</div><div class="stat-val" style="color:#52e07c" id="detail-chg24">—</div></div>
+          <div class="stat-box"><div class="stat-label">Value</div><div class="stat-val" id="detail-val">—</div></div>
+        </div>
+        <div class="detail-actions">
+          <button class="detail-action-btn secondary" onclick="closeOverlay('tokendetail');openOverlay('send')">Send</button>
+          <button class="detail-action-btn primary" onclick="closeOverlay('tokendetail');openOverlay('edit')">Edit</button>
+        </div>
+      </div>
+      <div style="height:24px"></div>
+    </div>
+  </div>
+
+  <!-- ═══ EDIT PANEL ═══ -->
+  <div class="overlay" id="overlay-edit" onclick="closeOnBg(event,'edit')">
+    <div class="sheet" style="max-height:95%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <span class="sheet-title">✏️ Edit Wallet</span>
+        <button class="close-btn" onclick="closeOverlay('edit')">✕</button>
+      </div>
+      <div class="sheet-body">
+
+        <!-- Profile -->
+        <div class="edit-section">
+          <div class="edit-section-title">👤 Profile</div>
+          <div class="edit-row">
+            <span class="edit-row-label">Name</span>
+            <input class="input-field" id="edit-name" type="text" placeholder="GhostWallet"/>
+          </div>
+          <div class="edit-row">
+            <span class="edit-row-label">Handle</span>
+            <input class="input-field" id="edit-handle" type="text" placeholder="@GhostWallet"/>
+          </div>
+          <div class="edit-row">
+            <span class="edit-row-label">Icon</span>
+            <input class="input-field" id="edit-icon" type="text" placeholder="👻" style="max-width:80px"/>
+          </div>
+        </div>
+
+        <div class="edit-divider"></div>
+
+        <!-- Balance -->
+        <div class="edit-section">
+          <div class="edit-section-title">💰 Balance</div>
+          <div class="edit-row">
+            <span class="edit-row-label">Total</span>
+            <input class="input-field" id="edit-balance" type="text" placeholder="$6,486,518.40"/>
+          </div>
+          <div class="edit-row">
+            <span class="edit-row-label">Change $</span>
+            <input class="input-field" id="edit-change-dollar" type="text" placeholder="+$73,574.22"/>
+          </div>
+          <div class="edit-row">
+            <span class="edit-row-label">Change %</span>
+            <input class="input-field" id="edit-change-pct" type="text" placeholder="+185%"/>
+          </div>
+          <div class="edit-row">
+            <span class="edit-row-label">Cash</span>
+            <input class="input-field" id="edit-cash" type="text" placeholder="$0.00"/>
+          </div>
+        </div>
+
+        <div class="edit-divider"></div>
+
+        <!-- Tokens -->
+        <div class="edit-section">
+          <div class="edit-section-title">🪙 Tokens</div>
+          <div id="token-edit-list"></div>
+        </div>
+
+        <div class="edit-divider"></div>
+
+        <!-- Transactions -->
+        <div class="edit-section">
+          <div class="edit-section-title">📋 Transactions</div>
+          <div id="tx-edit-list"></div>
+          <button class="add-tx-btn" onclick="addTransaction()">+ Add Transaction</button>
+        </div>
+
+        <button class="primary-btn" onclick="applyEdits()">Apply Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
 </div>
-
-<!-- PRESTIGE MODAL -->
-<div class="modal-bg hidden" id="prestige-modal">
-  <div class="modal">
-    <h2>☢ Prestige</h2>
-    <p id="prestige-modal-text">You will lose all lemons, generators, and upgrades — but gain a permanent <strong style="color:var(--lemon)">×1.75</strong> multiplier stacking on top of previous prestiges. Your skins are kept.</p>
-    <div class="modal-btns">
-      <button class="mbtn mbtn-cancel" onclick="closePrestige()">Cancel</button>
-      <button class="mbtn mbtn-confirm" onclick="doPrestige()">Prestige!</button>
-    </div>
-  </div>
-</div>
-
-<div id="toasts"></div>
 
 <script>
-// =====================================================================
-// DATA DEFINITIONS
-// =====================================================================
+// ═══════════════════════════════════════
+// DATA STATE
+// ═══════════════════════════════════════
+const state = {
+  name: 'GhostWallet',
+  handle: '@GhostWallet',
+  icon: '👻',
+  balance: '$6,486,518.40',
+  changeDollar: '+$73,574.22',
+  changePct: '+185%',
+  cash: '$0.00',
+  tokens: [
+    { type:'btc', symbol:'BTC', name:'Bitcoin',  icon:'₿', holdings:'97 BTC',  usd:'$6,463,304.00', change:'+$73,178.44' },
+    { type:'eth', symbol:'ETH', name:'Ethereum', icon:'Ξ', holdings:'8 ETH',   usd:'$16,382.56',    change:'+$212.21' },
+    { type:'sol', symbol:'SOL', name:'Solana',   icon:'◎', holdings:'86 SOL',  usd:'$6,831.84',     change:'+$183.57' },
+  ],
+  transactions: [
+    { kind:'received', label:'Received BTC',      date:'Today · 11:22 AM',    usd:'+$12,400.00', coin:'+0.019 BTC' },
+    { kind:'swapped',  label:'Swapped ETH → SOL', date:'Today · 9:05 AM',     usd:'+86 SOL',     coin:'−2 ETH' },
+    { kind:'sent',     label:'Sent ETH',           date:'Yesterday · 6:48 PM', usd:'−$4,100.00',  coin:'−1 ETH' },
+    { kind:'received', label:'Received SOL',       date:'Jun 25 · 3:12 PM',   usd:'+$6,800.00',  coin:'+86 SOL' },
+    { kind:'swapped',  label:'Swapped BTC → ETH', date:'Jun 23 · 10:30 AM',  usd:'+9 ETH',      coin:'−0.07 BTC' },
+    { kind:'received', label:'Bought BTC',         date:'Jun 20 · 8:00 AM',   usd:'+$1,200,000', coin:'+18.4 BTC' },
+    { kind:'sent',     label:'Sent SOL',           date:'Jun 18 · 2:15 PM',   usd:'−$340.00',    coin:'−4.2 SOL' },
+  ]
+};
 
-const SKINS = [
-  { id:'classic',   emoji:'🍋', name:'Classic',      bonus:1,    unlockTotal:0,       desc:'The OG. Simple and sour.' },
-  { id:'golden',    emoji:'✨', name:'Golden',        bonus:2,    unlockTotal:1000,    desc:'For the lemon tycoon.' },
-  { id:'fire',      emoji:'🔥', name:'Fire Lemon',    bonus:3,    unlockTotal:10000,   desc:'Scorching citrus.' },
-  { id:'crystal',   emoji:'💎', name:'Crystal',       bonus:4,    unlockTotal:100000,  desc:'Flawless precision.' },
-  { id:'cosmic',    emoji:'🌙', name:'Cosmic',        bonus:5,    unlockTotal:1e6,     desc:'From beyond the stars.' },
-  { id:'radioactive',emoji:'☢️',name:'Radioactive',   bonus:7,    unlockTotal:5e6,     desc:'Dangerously tangy.' },
-  { id:'ghost',     emoji:'👻', name:'Ghost',         bonus:8,    unlockTotal:2e7,     desc:'Haunted, but citrusy.' },
-  { id:'dragon',    emoji:'🐉', name:'Dragon',        bonus:10,   unlockTotal:1e8,     desc:'Ancient lemon energy.' },
-  { id:'alien',     emoji:'👽', name:'Alien',         bonus:12,   unlockTotal:5e8,     desc:'Extraterrestrial squeeze.' },
-  { id:'galaxy',    emoji:'🌌', name:'Galaxy',        bonus:15,   unlockTotal:1e10,    desc:'Universe of sourness.' },
-  { id:'void',      emoji:'🕳️', name:'Void',          bonus:20,   unlockTotal:1e12,    desc:'Nothing. Lemon nothing.' },
-  { id:'god',       emoji:'⚡', name:'Lemon God',     bonus:50,   unlockTotal:1e15,    desc:'You are the citrus.' },
-];
-
-const CLICK_UPGRADES = [
-  { id:'cu1',  name:'Tough Squeeze',     emoji:'💪', cost:50,      effect:(s)=>{ s.clickPower+=1 },    desc:'+1 click power', category:'click' },
-  { id:'cu2',  name:'Iron Wrist',        emoji:'🦾', cost:250,     effect:(s)=>{ s.clickPower+=4 },    desc:'+4 click power', category:'click' },
-  { id:'cu3',  name:'Power Grip',        emoji:'⚡', cost:1500,    effect:(s)=>{ s.clickPower+=15 },   desc:'+15 click power', category:'click' },
-  { id:'cu4',  name:'Mega Squeeze',      emoji:'🏋️', cost:10000,   effect:(s)=>{ s.clickPower+=50 },   desc:'+50 click power', category:'click' },
-  { id:'cu5',  name:'Hydraulic Press',   emoji:'🔩', cost:75000,   effect:(s)=>{ s.clickPower+=200 },  desc:'+200 click power', category:'click' },
-  { id:'cu6',  name:'Quantum Click',     emoji:'🔮', cost:500000,  effect:(s)=>{ s.clickPower+=1000 }, desc:'+1,000 click power', category:'click' },
-  { id:'cu7',  name:'God Hand',          emoji:'🌟', cost:5e6,     effect:(s)=>{ s.clickPower+=5000 }, desc:'+5,000 click power', category:'click' },
-  { id:'cu8',  name:'Singularity Tap',   emoji:'🌀', cost:5e8,     effect:(s)=>{ s.clickPower+=50000},  desc:'+50,000 click power', category:'click' },
-];
-
-const PROD_UPGRADES = [
-  { id:'pu1',  name:'Double Squeeze',    emoji:'🍋', cost:500,     effect:(s)=>{ s.multiplier*=2 },    desc:'×2 all production', category:'prod' },
-  { id:'pu2',  name:'Lemon Cult',        emoji:'🙏', cost:3000,    effect:(s)=>{ s.multiplier*=2 },    desc:'×2 all production', category:'prod' },
-  { id:'pu3',  name:'Golden Formula',    emoji:'✨', cost:20000,   effect:(s)=>{ s.multiplier*=3 },    desc:'×3 all production', category:'prod' },
-  { id:'pu4',  name:'Sour Reactor',      emoji:'⚗️', cost:150000,  effect:(s)=>{ s.multiplier*=3 },    desc:'×3 all production', category:'prod' },
-  { id:'pu5',  name:'Hyper Juicer',      emoji:'🚀', cost:1e6,     effect:(s)=>{ s.multiplier*=4 },    desc:'×4 all production', category:'prod' },
-  { id:'pu6',  name:'Dark Matter Juice', emoji:'🌑', cost:1e7,     effect:(s)=>{ s.multiplier*=5 },    desc:'×5 all production', category:'prod' },
-  { id:'pu7',  name:'Lemon Singularity', emoji:'💫', cost:1e9,     effect:(s)=>{ s.multiplier*=10 },   desc:'×10 all production', category:'prod' },
-  { id:'pu8',  name:'Citrus Infinity',   emoji:'♾️', cost:1e12,    effect:(s)=>{ s.multiplier*=20 },   desc:'×20 all production', category:'prod' },
-];
-
-const SPECIAL_UPGRADES = [
-  { id:'sp1',  name:'Zest Protocol',     emoji:'🧪', cost:5000,    effect:(s)=>{ s.clickMultiplier*=1.5 }, desc:'Clicks ×1.5 more juice', category:'special' },
-  { id:'sp2',  name:'Auto-Squeezer',     emoji:'🤖', cost:25000,   effect:(s)=>{ s.autoClick=true },       desc:'Auto-clicks 1×/sec', category:'special' },
-  { id:'sp3',  name:'Lemon Market',      emoji:'📈', cost:100000,  effect:(s)=>{ s.multiplier*=2; s.clickPower+=100 }, desc:'×2 prod +100 click', category:'special' },
-  { id:'sp4',  name:'Time Warp Juice',   emoji:'⏰', cost:500000,  effect:(s)=>{ s.multiplier*=3 },        desc:'×3 all + retroactive', category:'special' },
-  { id:'sp5',  name:'Lemon Weather',     emoji:'⛅', cost:2e6,     effect:(s)=>{ s.multiplier*=4 },        desc:'It rains lemons ×4', category:'special' },
-  { id:'sp6',  name:'Citrus Dimension',  emoji:'🌀', cost:2e7,     effect:(s)=>{ s.multiplier*=6; s.clickPower+=5000 }, desc:'×6 all +5k click', category:'special' },
-  { id:'sp7',  name:'Lemon God Mode',    emoji:'👑', cost:5e8,     effect:(s)=>{ s.multiplier*=10; s.clickMultiplier*=2 }, desc:'×10 all, clicks×2', category:'special' },
-];
-
-const GENERATORS = [
-  { id:'hand',      name:'Hand Squeezer',      emoji:'✋', base:15,     lps:.1,   desc:'A tireless hand.' },
-  { id:'juicer',    name:'Citrus Juicer',       emoji:'🫙', base:100,    lps:.5,   desc:'Basic press, reliable.' },
-  { id:'grove',     name:'Lemon Grove',         emoji:'🌳', base:600,    lps:2.5,  desc:'Your own orchard.' },
-  { id:'factory',   name:'Juice Factory',       emoji:'🏭', base:3000,   lps:12,   desc:'Industrial sour power.' },
-  { id:'lab',       name:'Citrus Lab',          emoji:'🔬', base:15000,  lps:50,   desc:'Science + tartness.' },
-  { id:'drone',     name:'Lemon Drone Swarm',   emoji:'🚁', base:60000,  lps:200,  desc:'Aerial citrus ops.' },
-  { id:'planet',    name:'Lemon Planet',        emoji:'🪐', base:300000, lps:900,  desc:'A whole world of sour.' },
-  { id:'star',      name:'Citrus Star',         emoji:'⭐', base:2e6,    lps:4000, desc:'Nuclear lemon fusion.' },
-  { id:'blackhole', name:'Lemon Black Hole',    emoji:'🕳️', base:2e7,    lps:20000,desc:'Gravity = lemons.' },
-  { id:'dimension', name:'Citrus Dimension',    emoji:'🌀', base:2e8,    lps:1e5,  desc:'Beyond space and sour.' },
-  { id:'multiverse',name:'Lemon Multiverse',    emoji:'🌌', base:2e9,    lps:5e5,  desc:'Infinite parallel lemons.' },
-  { id:'godmachine',name:'God Machine',         emoji:'⚙️', base:2e11,   lps:5e6,  desc:'Divine lemon apparatus.' },
-];
-
-const ACHIEVEMENTS = [
-  { id:'a1',  name:'First Squeeze',    emoji:'🍋', cond:(s)=>s.totalLemons>=1 },
-  { id:'a2',  name:'Lemon Baby',       emoji:'👶', cond:(s)=>s.totalLemons>=100 },
-  { id:'a3',  name:'Juice Apprentice', emoji:'🎓', cond:(s)=>s.totalLemons>=1000 },
-  { id:'a4',  name:'Kilo-Lemon',       emoji:'💯', cond:(s)=>s.totalLemons>=1e4 },
-  { id:'a5',  name:'Lemon Mill.',      emoji:'💰', cond:(s)=>s.totalLemons>=1e6 },
-  { id:'a6',  name:'Juice Tycoon',     emoji:'🏆', cond:(s)=>s.totalLemons>=1e9 },
-  { id:'a7',  name:'Galactic Sour',    emoji:'🌌', cond:(s)=>s.totalLemons>=1e12 },
-  { id:'a8',  name:'God of Lemons',    emoji:'⚡', cond:(s)=>s.totalLemons>=1e18 },
-  { id:'a9',  name:'First Factory',    emoji:'🏭', cond:(s)=>(s.generators['hand']||0)>=1 },
-  { id:'a10', name:'10 Juicers',       emoji:'🫙', cond:(s)=>(s.generators['juicer']||0)>=10 },
-  { id:'a11', name:'Lemon Grove',      emoji:'🌳', cond:(s)=>(s.generators['grove']||0)>=1 },
-  { id:'a12', name:'Planetary',        emoji:'🪐', cond:(s)=>(s.generators['planet']||0)>=1 },
-  { id:'a13', name:'Prestige Baron',   emoji:'☢', cond:(s)=>s.prestigeCount>=1 },
-  { id:'a14', name:'Triple Prestige',  emoji:'🔱', cond:(s)=>s.prestigeCount>=3 },
-  { id:'a15', name:'Skin Collector',   emoji:'🎨', cond:(s)=>s.unlockedSkins.length>=5 },
-  { id:'a16', name:'Auto Squeezer',    emoji:'🤖', cond:(s)=>s.upgrades['sp2'] },
-  { id:'a17', name:'Speed Demon',      emoji:'💨', cond:(s)=>totalLPS(s)>=1000 },
-  { id:'a18', name:'LPS Godlike',      emoji:'🚀', cond:(s)=>totalLPS(s)>=1e6 },
-  { id:'a19', name:'Click Master',     emoji:'👊', cond:(s)=>s.totalClicks>=10000 },
-  { id:'a20', name:'Multiverse',       emoji:'🌀', cond:(s)=>(s.generators['multiverse']||0)>=1 },
-];
-
-// =====================================================================
-// STATE
-// =====================================================================
-function defaultState() {
-  return {
-    lemons: 0,
-    totalLemons: 0,
-    totalClicks: 0,
-    clickPower: 1,
-    clickMultiplier: 1,
-    multiplier: 1,
-    autoClick: false,
-    prestigeCount: 0,
-    prestigeMultiplier: 1,
-    generators: {},
-    upgrades: {},
-    activeSkin: 'classic',
-    unlockedSkins: ['classic'],
-    achievementsUnlocked: [],
-    sessionStart: Date.now(),
-  };
-}
-
-let state = defaultState();
-let bulkAmt = 1;
-
-// =====================================================================
-// SAVE / LOAD
-// =====================================================================
-function saveGame() {
-  try {
-    localStorage.setItem('lemon_empire_v2', JSON.stringify(state));
-    const dot = document.getElementById('save-dot');
-    const txt = document.getElementById('save-txt');
-    dot.classList.add('saved');
-    txt.textContent = 'Saved ' + new Date().toLocaleTimeString();
-    setTimeout(()=>dot.classList.remove('saved'), 1500);
-  } catch(e) {}
-}
-
-function loadGame() {
-  try {
-    const raw = localStorage.getItem('lemon_empire_v2');
-    if (!raw) return;
-    const loaded = JSON.parse(raw);
-    // merge to handle new fields
-    state = Object.assign(defaultState(), loaded);
-    // re-apply all bought upgrades to rebuild clickPower/multiplier from scratch
-    rebuildFromUpgrades();
-  } catch(e) {
-    console.warn('Load failed, starting fresh.');
-  }
-}
-
-function rebuildFromUpgrades() {
-  // Reset derived stats and reapply
-  const s = defaultState();
-  s.lemons = state.lemons;
-  s.totalLemons = state.totalLemons;
-  s.totalClicks = state.totalClicks;
-  s.prestigeCount = state.prestigeCount;
-  s.prestigeMultiplier = state.prestigeMultiplier;
-  s.multiplier = state.prestigeMultiplier;
-  s.generators = state.generators;
-  s.upgrades = state.upgrades;
-  s.activeSkin = state.activeSkin;
-  s.unlockedSkins = state.unlockedSkins;
-  s.achievementsUnlocked = state.achievementsUnlocked;
-  s.autoClick = false;
-  s.clickMultiplier = 1;
-
-  const allUpgrades = [...CLICK_UPGRADES, ...PROD_UPGRADES, ...SPECIAL_UPGRADES];
-  for (const up of allUpgrades) {
-    if (state.upgrades[up.id]) up.effect(s);
-  }
-  state = s;
-}
-
-// =====================================================================
-// HELPERS
-// =====================================================================
-function fmt(n) {
-  n = Math.floor(n);
-  if (n >= 1e18) return (n/1e18).toFixed(2)+'Qi';
-  if (n >= 1e15) return (n/1e15).toFixed(2)+'Qa';
-  if (n >= 1e12) return (n/1e12).toFixed(2)+'T';
-  if (n >= 1e9)  return (n/1e9).toFixed(2)+'B';
-  if (n >= 1e6)  return (n/1e6).toFixed(2)+'M';
-  if (n >= 1e3)  return (n/1e3).toFixed(1)+'K';
-  return n.toString();
-}
-
-function fmtDec(n) {
-  if (n >= 1e6) return fmt(n);
-  if (n >= 1000) return (n/1000).toFixed(1)+'K';
-  if (n >= 10) return n.toFixed(1);
-  return n.toFixed(2);
-}
-
-function skinBonus() {
-  const skin = SKINS.find(s=>s.id===state.activeSkin);
-  return skin ? skin.bonus : 1;
-}
-
-function effectiveClickPower() {
-  return Math.max(1, Math.floor(state.clickPower * state.clickMultiplier * skinBonus()));
-}
-
-function totalLPS(s) {
-  s = s || state;
-  let lps = 0;
-  for (const g of GENERATORS) lps += (s.generators[g.id]||0) * g.lps;
-  return lps * s.multiplier;
-}
-
-function genCost(gen, qty) {
-  qty = qty || 1;
-  const owned = state.generators[gen.id]||0;
-  // sum of geometric series
-  return Math.floor(gen.base * (Math.pow(1.15, owned) * (Math.pow(1.15, qty) - 1)) / 0.15);
-}
-
-function maxBuyable(gen) {
-  let owned = state.generators[gen.id]||0;
-  let budget = state.lemons;
-  let qty = 0;
-  let cost = gen.base * Math.pow(1.15, owned);
-  while (budget >= cost) {
-    budget -= cost;
-    owned++;
-    qty++;
-    cost = gen.base * Math.pow(1.15, owned);
-    if (qty > 10000) break;
-  }
-  return qty;
-}
-
-function getBulkCost(gen) {
-  if (bulkAmt === 'max') {
-    const max = maxBuyable(gen);
-    if (max === 0) return { qty: 0, cost: genCost(gen, 1) };
-    return { qty: max, cost: genCost(gen, max) };
-  }
-  return { qty: bulkAmt, cost: genCost(gen, bulkAmt) };
-}
-
-// =====================================================================
+// ═══════════════════════════════════════
 // RENDER
-// =====================================================================
-function renderUpgrades() {
-  function buildList(container, list) {
-    const el = document.getElementById(container);
-    el.innerHTML = '';
-    for (const up of list) {
-      const bought = state.upgrades[up.id];
-      const can = state.lemons >= up.cost && !bought;
-      const card = document.createElement('div');
-      card.className = 'upg-card' + (bought?' bought':can?' can-buy':'');
-      card.innerHTML = `
-        <span class="upg-icon">${up.emoji}</span>
-        <div class="upg-body">
-          <div class="upg-name">${up.name}</div>
-          <div class="upg-desc">${bought?'✓ Purchased':up.desc}</div>
-        </div>
-        <div class="upg-cost ${!can&&!bought?'dim':''}">
-          ${bought?'✓':'🍋'+fmt(up.cost)}
-        </div>`;
-      if (!bought) card.onclick = ()=>buyUpgrade(up.id);
-      el.appendChild(card);
-    }
-  }
-  buildList('click-upgrades', CLICK_UPGRADES);
-  buildList('prod-upgrades', PROD_UPGRADES);
-  buildList('special-upgrades', SPECIAL_UPGRADES);
+// ═══════════════════════════════════════
+function renderWallet() {
+  document.getElementById('display-name').textContent = state.name;
+  document.getElementById('display-handle').textContent = state.handle;
+  document.querySelector('.ghost-icon').textContent = state.icon;
+  document.getElementById('display-balance').textContent = state.balance;
+  document.getElementById('display-change-dollar').textContent = state.changeDollar;
+  document.getElementById('display-change-pct').textContent = state.changePct;
+  document.getElementById('display-cash').textContent = state.cash;
+  renderTokenList();
+  renderTxList();
 }
 
-function renderSkins() {
-  const grid = document.getElementById('skin-grid');
-  grid.innerHTML = '';
-  let unlocked = 0;
-  for (const sk of SKINS) {
-    const isUnlocked = state.unlockedSkins.includes(sk.id) || state.totalLemons >= sk.unlockTotal;
-    if (isUnlocked && !state.unlockedSkins.includes(sk.id)) {
-      state.unlockedSkins.push(sk.id);
-      toast(`🎨 Skin Unlocked: ${sk.emoji} ${sk.name}!`);
-    }
-    if (isUnlocked) unlocked++;
-    const isActive = state.activeSkin === sk.id;
-    const card = document.createElement('div');
-    card.className = 'skin-card' + (isActive?' active-skin':'') + (!isUnlocked?' locked':'');
-    card.innerHTML = `
-      ${isActive?'<div class="skin-badge">ON</div>':''}
-      <div class="skin-emoji">${sk.emoji}</div>
-      <div class="skin-name">${sk.name}</div>
-      <div class="skin-bonus">+${sk.bonus}× click</div>
-      <div class="skin-unlock">${isUnlocked?'Unlocked':'🍋'+fmt(sk.unlockTotal)+' total'}</div>`;
-    if (isUnlocked) card.onclick = ()=>activateSkin(sk.id);
-    grid.appendChild(card);
-  }
-  document.getElementById('skins-unlocked').textContent = unlocked+'/'+SKINS.length;
-}
-
-function renderGenerators() {
-  const el = document.getElementById('gen-list');
-  el.innerHTML = '';
-  let totalLps = 0;
-  for (const gen of GENERATORS) {
-    const owned = state.generators[gen.id]||0;
-    totalLps += owned * gen.lps * state.multiplier;
-    const { qty, cost } = getBulkCost(gen);
-    const can = qty > 0 && state.lemons >= cost;
-    const prog = Math.min(100, (state.lemons / cost) * 100);
-    const card = document.createElement('div');
-    card.className = 'gen-card' + (can?' can-buy':'');
-    card.style.setProperty('--prog', prog+'%');
-    const buyLabel = bulkAmt==='max' ? (qty>0?`×${qty}`:'×0') : `×${bulkAmt}`;
-    card.innerHTML = `
-      <span class="gen-emoji">${gen.emoji}</span>
-      <div>
-        <div class="gen-name">${gen.name}</div>
-        <div class="gen-rate">${fmtDec(gen.lps * state.multiplier)}/s each — ${gen.desc}</div>
+function renderTokenList() {
+  const el = document.getElementById('token-list-display');
+  el.innerHTML = state.tokens.map((t,i) => `
+    <div class="token-card" onclick="openTokenDetail('${t.type}','${t.name}','${t.icon}','${t.usd}','${t.change}','${t.holdings}','${t.type}')">
+      <div class="token-icon ${t.type}">${t.icon}</div>
+      <div class="token-info">
+        <div class="token-name-row"><span class="token-name">${t.name}</span><span class="verified">✔️</span></div>
+        <div class="token-amount">${t.holdings}</div>
       </div>
-      <div class="gen-right">
-        <div class="gen-count">${owned}</div>
-        <div class="gen-cost ${can?'af':''}">🍋${fmt(cost)} ${buyLabel}</div>
-      </div>`;
-    card.onclick = ()=>buyGenerator(gen.id);
-    el.appendChild(card);
-  }
-  document.getElementById('gen-total-lps').textContent = fmtDec(totalLps)+'/s';
+      <div class="token-value">
+        <div class="token-usd">${t.usd}</div>
+        <div class="token-change">${t.change}</div>
+      </div>
+    </div>`).join('');
 }
 
-function renderAchievements() {
-  const el = document.getElementById('ach-strip');
-  el.innerHTML = '';
-  for (const a of ACHIEVEMENTS) {
-    const done = state.achievementsUnlocked.includes(a.id);
-    const div = document.createElement('div');
-    div.className = 'ach'+(done?' done':'');
-    div.textContent = a.emoji+' '+a.name;
-    el.appendChild(div);
-  }
+function renderTxList() {
+  const el = document.getElementById('tx-list-display');
+  const icons = { sent:'📤', received:'📥', swapped:'🔄' };
+  el.innerHTML = state.transactions.map(tx => {
+    const isPos = tx.usd.startsWith('+');
+    return `<div class="tx-item">
+      <div class="tx-icon ${tx.kind}">${icons[tx.kind]||'💱'}</div>
+      <div class="tx-info"><div class="tx-type">${tx.label}</div><div class="tx-date">${tx.date}</div></div>
+      <div class="tx-amount">
+        <div class="tx-usd ${isPos?'positive':'negative'}">${tx.usd}</div>
+        <div class="tx-coin">${tx.coin}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function renderStats() {
-  const el = document.getElementById('stats-list');
-  el.innerHTML = `
-    <div>Total Lemons: <span style="color:var(--lemon)">${fmt(state.totalLemons)}</span></div>
-    <div>Total Clicks: <span style="color:var(--lemon)">${fmt(state.totalClicks)}</span></div>
-    <div>Prestige Level: <span style="color:var(--lemon)">${state.prestigeCount}</span></div>
-    <div>Prestige Mult: <span style="color:var(--lemon)">×${state.prestigeMultiplier.toFixed(2)}</span></div>
-    <div>Current LPS: <span style="color:var(--lemon)">${fmtDec(totalLPS())}/s</span></div>
-    <div>Click Power: <span style="color:var(--lemon)">${fmt(effectiveClickPower())}</span></div>
-    <div>Active Skin: <span style="color:var(--lemon)">${SKINS.find(s=>s.id===state.activeSkin)?.emoji} ${SKINS.find(s=>s.id===state.activeSkin)?.name}</span></div>
-    <div>Skins Unlocked: <span style="color:var(--lemon)">${state.unlockedSkins.length}/${SKINS.length}</span></div>
-    <div>Achievements: <span style="color:var(--lemon)">${state.achievementsUnlocked.length}/${ACHIEVEMENTS.length}</span></div>
-    <div>Session Time: <span style="color:var(--lemon)">${fmtTime(Date.now()-state.sessionStart)}</span></div>
-  `;
+// ═══════════════════════════════════════
+// EDIT PANEL
+// ═══════════════════════════════════════
+function openOverlay(name) {
+  if (name === 'edit') populateEditPanel();
+  document.getElementById('overlay-' + name).classList.add('open');
+}
+function closeOverlay(name) {
+  document.getElementById('overlay-' + name).classList.remove('open');
+}
+function closeOnBg(e, name) {
+  if (e.target === document.getElementById('overlay-' + name)) closeOverlay(name);
 }
 
-function fmtTime(ms) {
-  const s = Math.floor(ms/1000);
-  const m = Math.floor(s/60), h = Math.floor(m/60);
-  if (h>0) return h+'h '+(m%60)+'m';
-  if (m>0) return m+'m '+(s%60)+'s';
-  return s+'s';
+function populateEditPanel() {
+  document.getElementById('edit-name').value = state.name;
+  document.getElementById('edit-handle').value = state.handle;
+  document.getElementById('edit-icon').value = state.icon;
+  document.getElementById('edit-balance').value = state.balance;
+  document.getElementById('edit-change-dollar').value = state.changeDollar;
+  document.getElementById('edit-change-pct').value = state.changePct;
+  document.getElementById('edit-cash').value = state.cash;
+  renderTokenEditList();
+  renderTxEditList();
 }
 
-function updateHeader() {
-  const lps = totalLPS();
-  const skin = SKINS.find(s=>s.id===state.activeSkin);
-  document.getElementById('lemon-count').textContent = fmt(state.lemons);
-  document.getElementById('h-total').textContent = fmt(state.totalLemons);
-  document.getElementById('h-lps').textContent = fmtDec(lps)+'/s';
-  document.getElementById('h-prestige').textContent = 'Lv.'+state.prestigeCount;
-  document.getElementById('h-skin').textContent = (skin?.emoji||'')+' '+(skin?.name||'');
-  document.getElementById('s-click').textContent = fmt(effectiveClickPower());
-  document.getElementById('s-lps').textContent = fmtDec(lps);
-  document.getElementById('s-mult').textContent = '×'+state.multiplier.toFixed(1);
-  document.getElementById('s-skin').textContent = '×'+skinBonus();
-  document.getElementById('main-lemon').textContent = skin?.emoji || '🍋';
-
-  // prestige button
-  const pb = document.getElementById('prestige-btn');
-  const pi = document.getElementById('prestige-info');
-  const needed = 1e7 * Math.pow(5, state.prestigeCount);
-  if (state.totalLemons >= needed) {
-    pb.classList.add('ready');
-    pb.textContent = '☢ Prestige! (Ready)';
-    pi.textContent = `+×1.75 permanent bonus`;
-  } else {
-    pb.classList.remove('ready');
-    pb.textContent = '☢ Prestige Reset';
-    pi.textContent = `Need ${fmt(needed)} total lemons`;
-  }
+function renderTokenEditList() {
+  const el = document.getElementById('token-edit-list');
+  el.innerHTML = state.tokens.map((t,i) => `
+    <div class="token-edit-row">
+      <div class="token-edit-header">
+        <div class="token-icon ${t.type}" style="width:28px;height:28px;font-size:14px">${t.icon}</div>
+        <strong style="font-size:13px">${t.name}</strong>
+      </div>
+      <div class="token-edit-fields">
+        <input class="input-field" data-ti="${i}" data-tf="holdings" value="${t.holdings}" placeholder="Holdings"/>
+        <input class="input-field" data-ti="${i}" data-tf="usd" value="${t.usd}" placeholder="Value USD"/>
+        <input class="input-field" data-ti="${i}" data-tf="change" value="${t.change}" placeholder="Change"/>
+      </div>
+    </div>`).join('');
 }
 
-// =====================================================================
-// ACTIONS
-// =====================================================================
-function handleClick(e) {
-  const gain = effectiveClickPower();
-  state.lemons += gain;
-  state.totalLemons += gain;
-  state.totalClicks++;
-
-  // flash
-  const cn = document.getElementById('lemon-count');
-  cn.classList.add('flash');
-  setTimeout(()=>cn.classList.remove('flash'), 150);
-
-  // particle
-  const p = document.createElement('div');
-  p.className = 'particle';
-  p.textContent = '+'+fmt(gain)+' 🍋';
-  p.style.left = (e.clientX - 28)+'px';
-  p.style.top  = (e.clientY - 8)+'px';
-  document.body.appendChild(p);
-  setTimeout(()=>p.remove(), 870);
+function renderTxEditList() {
+  const el = document.getElementById('tx-edit-list');
+  el.innerHTML = state.transactions.map((tx,i) => `
+    <div class="tx-edit-row">
+      <div class="tx-edit-top">
+        <select class="tx-type-select" data-xi="${i}" data-xf="kind">
+          <option value="received" ${tx.kind==='received'?'selected':''}>📥 Received</option>
+          <option value="sent" ${tx.kind==='sent'?'selected':''}>📤 Sent</option>
+          <option value="swapped" ${tx.kind==='swapped'?'selected':''}>🔄 Swapped</option>
+        </select>
+        <input class="input-field" data-xi="${i}" data-xf="label" value="${tx.label}" placeholder="Label" style="flex:1;font-size:13px;padding:6px 10px"/>
+        <button class="del-btn" onclick="deleteTransaction(${i})">✕</button>
+      </div>
+      <div class="tx-edit-fields">
+        <input class="input-field" data-xi="${i}" data-xf="date" value="${tx.date}" placeholder="Date"/>
+        <input class="input-field" data-xi="${i}" data-xf="usd" value="${tx.usd}" placeholder="USD amount"/>
+        <input class="input-field" data-xi="${i}" data-xf="coin" value="${tx.coin}" placeholder="Coin amount"/>
+      </div>
+    </div>`).join('');
 }
 
-function buyGenerator(id) {
-  const gen = GENERATORS.find(g=>g.id===id);
-  const { qty, cost } = getBulkCost(gen);
-  if (!qty || state.lemons < cost) return;
-  state.lemons -= cost;
-  state.generators[id] = (state.generators[id]||0) + qty;
-  const prev = (state.generators[id]||0) - qty;
-  if (prev === 0) toast(`🏭 First ${gen.name} online!`);
+function addTransaction() {
+  state.transactions.unshift({ kind:'received', label:'New Transaction', date:'Just now', usd:'+$0.00', coin:'+0' });
+  renderTxEditList();
+}
+function deleteTransaction(i) {
+  state.transactions.splice(i,1);
+  renderTxEditList();
 }
 
-function buyUpgrade(id) {
-  const allUpgrades = [...CLICK_UPGRADES, ...PROD_UPGRADES, ...SPECIAL_UPGRADES];
-  const up = allUpgrades.find(u=>u.id===id);
-  if (!up || state.upgrades[id] || state.lemons < up.cost) return;
-  state.lemons -= up.cost;
-  state.upgrades[id] = true;
-  up.effect(state);
-  toast('⚡ Unlocked: '+up.name);
-}
+function applyEdits() {
+  // Profile & balance
+  state.name        = document.getElementById('edit-name').value || state.name;
+  state.handle      = document.getElementById('edit-handle').value || state.handle;
+  state.icon        = document.getElementById('edit-icon').value || state.icon;
+  state.balance     = document.getElementById('edit-balance').value || state.balance;
+  state.changeDollar= document.getElementById('edit-change-dollar').value || state.changeDollar;
+  state.changePct   = document.getElementById('edit-change-pct').value || state.changePct;
+  state.cash        = document.getElementById('edit-cash').value || state.cash;
 
-function activateSkin(id) {
-  if (!state.unlockedSkins.includes(id)) return;
-  state.activeSkin = id;
-  const sk = SKINS.find(s=>s.id===id);
-  toast(sk.emoji+' Skin equipped: '+sk.name+' (×'+sk.bonus+' click)');
-  renderSkins();
-  updateHeader();
-}
-
-function setBulk(n) {
-  bulkAmt = n;
-  document.querySelectorAll('.bulk-btn').forEach(b=>b.classList.remove('active'));
-  const map = {1:'bulk-1',10:'bulk-10',25:'bulk-25',100:'bulk-100','max':'bulk-max'};
-  document.getElementById(map[n])?.classList.add('active');
-}
-
-function openPrestige() {
-  const needed = 1e7 * Math.pow(5, state.prestigeCount);
-  if (state.totalLemons < needed) {
-    toast('🍋 Need '+fmt(needed)+' total lemons to prestige!');
-    return;
-  }
-  const nextMult = (state.prestigeMultiplier * 1.75).toFixed(2);
-  document.getElementById('prestige-modal-text').innerHTML =
-    `You will lose all lemons, generators, and upgrades — but your permanent multiplier becomes <strong style="color:var(--lemon)">×${nextMult}</strong>. Your skins and achievements are kept.`;
-  document.getElementById('prestige-modal').classList.remove('hidden');
-}
-
-function closePrestige() {
-  document.getElementById('prestige-modal').classList.add('hidden');
-}
-
-function doPrestige() {
-  closePrestige();
-  state.prestigeCount++;
-  state.prestigeMultiplier *= 1.75;
-  const pm = state.prestigeMultiplier;
-  const kept = { unlockedSkins: state.unlockedSkins, achievementsUnlocked: state.achievementsUnlocked, prestigeCount: state.prestigeCount, prestigeMultiplier: pm, totalLemons: state.totalLemons, totalClicks: state.totalClicks, sessionStart: state.sessionStart };
-  state = defaultState();
-  Object.assign(state, kept);
-  state.multiplier = pm;
-  toast('☢ Prestige '+state.prestigeCount+'! Multiplier ×'+pm.toFixed(2));
-  renderAll();
-}
-
-function checkAchievements() {
-  let changed = false;
-  for (const a of ACHIEVEMENTS) {
-    if (!state.achievementsUnlocked.includes(a.id) && a.cond(state)) {
-      state.achievementsUnlocked.push(a.id);
-      toast('🏆 Achievement: '+a.emoji+' '+a.name);
-      changed = true;
-    }
-  }
-  if (changed) renderAchievements();
-}
-
-function switchTab(name) {
-  document.querySelectorAll('.tab').forEach((t,i)=>{
-    const names = ['upgrades','skins','stats'];
-    t.classList.toggle('active', names[i]===name);
+  // Tokens
+  document.querySelectorAll('[data-ti]').forEach(inp => {
+    const i = +inp.dataset.ti, f = inp.dataset.tf;
+    if (state.tokens[i]) state.tokens[i][f] = inp.value;
   });
-  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  if (name==='stats') renderStats();
-  if (name==='skins') renderSkins();
+
+  // Transactions
+  document.querySelectorAll('[data-xi]').forEach(inp => {
+    const i = +inp.dataset.xi, f = inp.dataset.xf;
+    if (state.transactions[i]) state.transactions[i][f] = inp.value || inp.selectedOptions?.[0]?.value;
+  });
+
+  renderWallet();
+  closeOverlay('edit');
+  showToast('✓ Wallet updated!');
 }
 
-function toast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
-  document.getElementById('toasts').appendChild(t);
-  setTimeout(()=>t.remove(), 2600);
+// ═══════════════════════════════════════
+// MISC
+// ═══════════════════════════════════════
+function setNav(el) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+}
+function selectPill(el) {
+  el.closest('.token-select').querySelectorAll('.token-pill').forEach(p=>p.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectChip(el) {
+  document.querySelectorAll('.amount-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectMethod(el) {
+  document.querySelectorAll('.cash-method').forEach(m=>{m.classList.remove('selected');m.querySelector('.method-check').textContent='';});
+  el.classList.add('selected'); el.querySelector('.method-check').textContent='✓';
+}
+function confirmAction(type) {
+  const m={send:'✓ Transaction submitted',swap:'✓ Swap initiated',addcash:'✓ Cash added'};
+  closeOverlay(type); showToast(m[type]||'✓ Done');
+}
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+function copyAddress() {
+  navigator.clipboard?.writeText('bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh').catch(()=>{});
+  showToast('📋 Address copied!');
+}
+function filterSearch(val) {
+  document.querySelectorAll('#search-results .search-result').forEach(r=>{
+    r.style.display=r.textContent.toLowerCase().includes(val.toLowerCase())?'':'none';
+  });
 }
 
-function renderAll() {
-  renderUpgrades();
-  renderGenerators();
-  renderAchievements();
-  renderSkins();
-  updateHeader();
+const tokenSparkData = {
+  btc:[62,55,58,50,45,52,48,44,40,46,42,38,35,38,32,36,30,34,28,22,18,14,10,8,10],
+  eth:[62,60,58,55,58,54,50,52,48,44,48,42,40,44,38,36,40,34,30,28,26,22,18,14,10],
+  sol:[62,58,60,54,56,50,52,46,48,42,44,38,40,34,36,30,32,26,28,22,24,18,20,14,10],
+};
+function openTokenDetail(type,name,icon,price,change,holdings,iconClass) {
+  document.getElementById('detail-title').textContent=name;
+  const di=document.getElementById('detail-icon');
+  di.textContent=icon; di.className='detail-icon token-icon '+iconClass;
+  di.style.cssText='width:60px;height:60px;font-size:30px';
+  document.getElementById('detail-price').textContent=price;
+  document.getElementById('detail-change').textContent=change+' today';
+  document.getElementById('detail-holdings').textContent=holdings;
+  document.getElementById('detail-chg24').textContent=change;
+  document.getElementById('detail-val').textContent=price;
+  const pts=tokenSparkData[type]||tokenSparkData.btc;
+  const W=300,H=72,pad=4,step=(W-pad*2)/(pts.length-1);
+  const d=pts.map((y,i)=>(i?'L':'M')+(pad+i*step).toFixed(1)+','+y).join(' ');
+  document.getElementById('spark-line').setAttribute('d',d);
+  document.getElementById('spark-area').setAttribute('d',d+' L'+(pad+(pts.length-1)*step).toFixed(1)+','+H+' L'+pad+','+H+' Z');
+  openOverlay('tokendetail');
 }
 
-// =====================================================================
-// GAME LOOP
-// =====================================================================
-let lastTick = performance.now();
-let lastRender = 0;
-let lastSave = 0;
-let autoClickTimer = 0;
-
-function gameLoop(now) {
-  const dt = Math.min((now - lastTick) / 1000, 0.5);
-  lastTick = now;
-
-  const lps = totalLPS();
-  if (lps > 0) {
-    const gain = lps * dt;
-    state.lemons += gain;
-    state.totalLemons += gain;
-  }
-
-  // auto-click
-  if (state.autoClick) {
-    autoClickTimer += dt;
-    if (autoClickTimer >= 1) {
-      autoClickTimer -= 1;
-      const gain = effectiveClickPower();
-      state.lemons += gain;
-      state.totalLemons += gain;
-    }
-  }
-
-  updateHeader();
-
-  // slow renders
-  if (now - lastRender > 600) {
-    lastRender = now;
-    renderUpgrades();
-    renderGenerators();
-    checkAchievements();
-    renderSkins();
-  }
-
-  // auto-save every 15s
-  if (now - lastSave > 15000) {
-    lastSave = now;
-    saveGame();
-  }
-
-  requestAnimationFrame(gameLoop);
-}
-
-// =====================================================================
-// INIT
-// =====================================================================
-document.getElementById('main-lemon').addEventListener('click', handleClick);
-
-loadGame();
-renderAll();
-requestAnimationFrame(t=>{ lastTick = t; gameLoop(t); });
-
-// save on tab close
-window.addEventListener('beforeunload', saveGame);
-window.addEventListener('visibilitychange', ()=>{ if(document.hidden) saveGame(); });
+// Init
+renderWallet();
 </script>
 </body>
-</html>
+</html> 
