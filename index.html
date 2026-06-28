@@ -210,6 +210,12 @@
     /* Toast */
     .toast{position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#252540;border:1px solid rgba(140,100,255,.3);border-radius:20px;padding:10px 20px;font-size:13px;font-weight:600;color:#c0b0ff;opacity:0;pointer-events:none;transition:all .3s;white-space:nowrap;z-index:200}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* Save indicator */
+    .save-indicator{font-size:11px;color:#52e07c;font-weight:600;display:flex;align-items:center;gap:4px;opacity:0;transition:opacity .3s}
+    .save-indicator.visible{opacity:1}
+    .reset-btn{width:100%;padding:10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:12px;color:#f87171;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px;transition:background .15s}
+    .reset-btn:hover{background:rgba(239,68,68,.2)}
   </style>
 </head>
 <body>
@@ -218,7 +224,7 @@
   <!-- Header -->
   <div class="header">
     <div class="wallet-identity">
-      <div class="ghost-icon">👻</div>
+      <div class="ghost-icon" id="display-icon">👻</div>
       <div class="wallet-name-block">
         <span class="wallet-handle" id="display-handle">@GhostWallet</span>
         <span class="wallet-name" id="display-name">GhostWallet</span>
@@ -269,6 +275,7 @@
       <div class="cash-label">Cash Balance</div>
       <div class="cash-amount" id="display-cash">$0.00</div>
     </div>
+    <button class="add-cash-btn" onclick="openOverlay('addcash')">+ Add Cash</button>
   </div>
 
   <!-- Tokens -->
@@ -458,7 +465,10 @@
       <div class="sheet-handle"></div>
       <div class="sheet-header">
         <span class="sheet-title">✏️ Edit Wallet</span>
-        <button class="close-btn" onclick="closeOverlay('edit')">✕</button>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="save-indicator" id="save-indicator">💾 Saved</span>
+          <button class="close-btn" onclick="closeOverlay('edit')">✕</button>
+        </div>
       </div>
       <div class="sheet-body">
 
@@ -520,6 +530,7 @@
         </div>
 
         <button class="primary-btn" onclick="applyEdits()">Apply Changes</button>
+        <button class="reset-btn" onclick="resetToDefaults()">Reset to defaults</button>
       </div>
     </div>
   </div>
@@ -529,9 +540,11 @@
 
 <script>
 // ═══════════════════════════════════════
-// DATA STATE
+// STORAGE
 // ═══════════════════════════════════════
-const state = {
+const STORAGE_KEY = 'ghostwallet_state_v1';
+
+const DEFAULT_STATE = {
   name: 'GhostWallet',
   handle: '@GhostWallet',
   icon: '👻',
@@ -555,13 +568,35 @@ const state = {
   ]
 };
 
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return { ...DEFAULT_STATE, ...JSON.parse(saved) };
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_STATE));
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const el = document.getElementById('save-indicator');
+    el.style.opacity = '1';
+    setTimeout(() => el.style.opacity = '0', 2000);
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════
+// DATA STATE
+// ═══════════════════════════════════════
+const state = loadState();
+
 // ═══════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════
 function renderWallet() {
   document.getElementById('display-name').textContent = state.name;
   document.getElementById('display-handle').textContent = state.handle;
-  document.querySelector('.ghost-icon').textContent = state.icon;
+  document.getElementById('display-icon').textContent = state.icon;
   document.getElementById('display-balance').textContent = state.balance;
   document.getElementById('display-change-dollar').textContent = state.changeDollar;
   document.getElementById('display-change-pct').textContent = state.changePct;
@@ -696,9 +731,20 @@ function applyEdits() {
     if (state.transactions[i]) state.transactions[i][f] = inp.value || inp.selectedOptions?.[0]?.value;
   });
 
+  saveState();
   renderWallet();
   closeOverlay('edit');
-  showToast('✓ Wallet updated!');
+  showToast('✓ Wallet saved to this device');
+}
+
+function resetToDefaults() {
+  if (!confirm('Reset wallet to default values? This cannot be undone.')) return;
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  const fresh = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  Object.assign(state, fresh);
+  populateEditPanel();
+  renderWallet();
+  showToast('↺ Reset to defaults');
 }
 
 // ═══════════════════════════════════════
@@ -766,4 +812,4 @@ function openTokenDetail(type,name,icon,price,change,holdings,iconClass) {
 renderWallet();
 </script>
 </body>
-</html> 
+</html>
